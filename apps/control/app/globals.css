@@ -1,0 +1,178 @@
+/* Token thi giac theo DESIGN.md (ux-AutoTest-2026-11-07) */
+:root {
+  --nen: #0f172a;
+  --be-mat: #1e293b;
+  --be-mat-sang: #334155;
+  --chu-chinh: #f1f5f9;
+  --chu-phu: #94a3b8;
+  --nhan-manh: #2563eb;
+  --qua: #16a34a;
+  --hong: #dc2626;
+  --cho: #d97706;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--nen);
+  color: var(--chu-chinh);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+.khung {
+  display: flex;
+  min-height: 100vh;
+}
+
+.thanh-trai {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--be-mat);
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.thanh-trai .logo {
+  font-size: 20px;
+  font-weight: 700;
+  padding: 4px 10px 16px;
+}
+
+.thanh-trai a {
+  color: var(--chu-chinh);
+  text-decoration: none;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.thanh-trai a:hover {
+  background: var(--be-mat-sang);
+}
+
+.vung-chinh {
+  flex: 1;
+  padding: 28px 32px;
+  min-width: 0;
+}
+
+.vung-chinh h1 {
+  font-size: 26px;
+  margin: 0 0 8px;
+}
+
+.vung-chinh h2 {
+  font-size: 19px;
+  margin: 24px 0 10px;
+}
+
+.mo-ta {
+  color: var(--chu-phu);
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+
+.the {
+  background: var(--be-mat);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.trang-thai {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+.trang-thai.ok {
+  background: rgba(22, 163, 74, 0.16);
+  color: #4ade80;
+}
+
+.trang-thai.xau {
+  background: rgba(220, 38, 38, 0.16);
+  color: #f87171;
+}
+
+.trang-thai.cho {
+  background: rgba(217, 119, 6, 0.16);
+  color: #fbbf24;
+}
+
+.nut-chinh {
+  background: var(--nhan-manh);
+  color: #fff;
+  border: none;
+  min-height: 52px;
+  padding: 0 26px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.nut-phu {
+  background: transparent;
+  color: var(--chu-chinh);
+  border: 1px solid var(--be-mat-sang);
+  min-height: 44px;
+  padding: 0 18px;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.bang {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.bang th,
+.bang td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--be-mat-sang);
+  font-variant-numeric: tabular-nums;
+}
+
+.bang th {
+  color: var(--chu-phu);
+  font-weight: 600;
+}
+
+.so-lieu {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .khung {
+    flex-direction: column;
+  }
+  .thanh-trai {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .vung-chinh {
+    padding: 20px 16px;
+  }
+}

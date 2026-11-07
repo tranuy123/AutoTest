@@ -1,0 +1,1 @@
+{"compilerOptions":{"outDir":"dist","rootDir":"src"},"exclude":["src/**/*.test.ts","src/testing.ts"],"extends":"./tsconfig.json","include":["src"]}

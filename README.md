@@ -17,6 +17,30 @@ Hệ thống tự động kiểm thử trên môi trường **UAT** cho CRM_Loya
 
 Đã qua cổng Phase 3 → Phase 4 (ngày 2026-11-07): Brief, PRD, Architecture Spine, Epics/Stories đã có; chủ dự án đã chốt QD-1 (stack TypeScript/Next.js/Playwright/Docker Compose), QD-2 (kịch bản YAML + chuyển đổi Excel), QD-4 (MVP chỉ đích CRM_Loyalty UAT) và duyệt spike stream QD-3 trong Sprint 1 — xem `implementation-readiness.md`. Sprint 1 bắt đầu với Epic 1 + spike S3.0.
 
+## Chạy trên máy thật
+
+Yêu cầu duy nhất: Docker + Docker Compose trên máy thật.
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+Sau khi các service healthy:
+
+- Mở Control App: http://localhost:3100 — trang chủ hiện "Hệ thống sẵn sàng".
+- Kiểm tra Orchestrator: `curl http://localhost:3101/health` → `{ "status": "ok" }`.
+
+Dừng hệ thống: `docker compose down` (thêm `-v` nếu muốn xoá cả dữ liệu DB nội bộ).
+
+Phát triển không qua Docker (trên máy dev có Node >= 22 và pnpm 11):
+
+```bash
+corepack enable && corepack prepare pnpm@11 --activate
+pnpm install
+pnpm build && pnpm typecheck && pnpm test
+```
+
 ## Nguyên tắc không thương lượng
 
 1. Chỉ chạy vào **UAT**. Chặn cứng Production (xem AGENTS.md).

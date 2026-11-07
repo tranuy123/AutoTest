@@ -14,7 +14,7 @@ sprint_planning:
     moi chuyen ready-for-dev.
 
 epics:
-  - { id: epic-1, title: Khung chay & an toan moi truong, status: in-progress }
+  - { id: epic-1, title: Khung chay & an toan moi truong, status: done }
   - { id: epic-2, title: Kich ban & sinh du lieu, status: backlog }
   - { id: epic-3, title: Thuc thi nhieu vai & stream, status: in-progress }
   - { id: epic-4, title: Oracle & kiem dem bao cao, status: backlog }
@@ -26,9 +26,9 @@ sprints:
     started: 2026-11-07
     goal: Nen khung chay + spike stream
     stories:
-      - { id: S1.1, title: Khoi tao monorepo + Docker Compose, status: ready-for-dev }
-      - { id: S1.2, title: Cau hinh moi truong + allowlist UAT + chan Production, status: ready-for-dev }
-      - { id: S1.3, title: Kho lan chay + run_id + nhat ky, status: ready-for-dev }
+      - { id: S1.1, title: Khoi tao monorepo + Docker Compose, status: done }
+      - { id: S1.2, title: Cau hinh moi truong + allowlist UAT + chan Production, status: done }
+      - { id: S1.3, title: Kho lan chay + run_id + nhat ky, status: done }
       - { id: S3.0, title: Spike stream CDP screencast vs noVNC, status: ready-for-dev }
   - id: sprint-2
     status: planned

@@ -17,4 +17,8 @@ AutoTest là app kiểm thử tự động trên UAT cho CRM_Loyalty (đặt l�
 ## Chạy và kiểm chứng (khi đã vào Phase 4)
 
 - Dự án đóng gói bằng Docker Compose để chạy trên máy thật của chủ dự án: `docker compose up -d` (control app + orchestrator + worker + db).
-- Lệnh kiểm tra chuẩn sẽ chốt trong Architecture Spine và ghi lại ở đây khi sprint 1 bắt đầu.
+- Lệnh kiểm chứng chuẩn (chốt ở Sprint 1, từ Story S1.1):
+  - Cài đặt + chất lượng: `pnpm install`, `pnpm build`, `pnpm typecheck`, `pnpm test`, `pnpm lint`
+  - Cấu trúc compose khi không có Docker: `pnpm verify:compose`
+  - Chạy trực tiếp bằng Node (thay thế tạm khi không có Docker): build xong chạy `node services/orchestrator/dist/index.js` (cổng 3101) và `pnpm --filter @autotest/control start` (cổng 3100), kiểm chứng bằng `curl http://localhost:3101/health` và mở http://localhost:3100.
+  - Trên máy thật có Docker: `cp .env.example .env && docker compose up -d && docker compose ps` — cả 4 service phải healthy.
