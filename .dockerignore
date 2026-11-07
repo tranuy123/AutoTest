@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.env
+.env.*
+!.env.example
+**/dist
+**/.next
+.git
+test-results
+playwright-report
+runs
+video
+videos
+_bmad-output

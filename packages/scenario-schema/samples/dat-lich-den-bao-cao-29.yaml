@@ -1,0 +1,98 @@
+# Kich ban mau chuan vang (S4.3): dat lich -> xac nhan -> check-in ->
+# kham -> thanh toan -> bao cao doanh thu 29.1 (theo ngay) va 29.2
+# (theo khach hang), kem khoi kiem dem doi chieu 3 chieu UI/API/DB voi
+# ky vong cua Oracle doc lap (S4.1/S4.2). La kich ban mac dinh thu hai
+# trong thu vien san pham.
+schemaVersion: 2
+id: dat-lich-den-bao-cao-29
+ten: Đặt lịch đến báo cáo doanh thu 29.1/29.2 (chuẩn vàng)
+moTa: Luồng trọn vẹn 5 vai tới báo cáo doanh thu 29.1 và 29.2; khối kiểm đếm đối chiếu tổng doanh thu ngày, doanh thu khách chính và số lượt check-in ở cả 3 nguồn UI/API/DB với kỳ vọng Oracle.
+cacVai:
+  - benh-nhan
+  - le-tan
+  - bac-si
+  - thu-ngan
+  - quan-ly
+sinhDuLieu:
+  benhNhan:
+    soLuong: 2
+  dichVu:
+    - ma: DV-KHAM-TQ
+      ten: Khám tổng quát
+      gia: 300000
+    - ma: DV-TAI-KHAM
+      ten: Tái khám
+      gia: 200000
+  lichHen:
+    soLuong: 2
+cacBuoc:
+  - id: dang-nhap-le-tan
+    vai: le-tan
+    hanhDong: dang-nhap
+    phatSuKien: le-tan-san-sang
+  - id: dat-lich
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: le-tan-san-sang
+    phatSuKien: lich-da-dat
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: DV-KHAM-TQ
+  - id: xac-nhan-lich
+    vai: le-tan
+    hanhDong: xac-nhan-lich
+    choSuKien: lich-da-dat
+    phatSuKien: lich-da-xac-nhan
+  - id: check-in
+    vai: benh-nhan
+    hanhDong: check-in
+    choSuKien: lich-da-xac-nhan
+    phatSuKien: da-check-in
+  - id: bat-dau-kham
+    vai: bac-si
+    hanhDong: bat-dau-kham
+    choSuKien: da-check-in
+    phatSuKien: dang-kham
+  - id: ket-thuc-kham
+    vai: bac-si
+    hanhDong: ket-thuc-kham
+    choSuKien: dang-kham
+    phatSuKien: kham-xong
+  - id: thanh-toan
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: kham-xong
+    phatSuKien: da-thanh-toan
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: xem-bao-cao-291
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: da-thanh-toan
+    phatSuKien: bao-cao-291-xong
+  - id: xem-bao-cao-292
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: bao-cao-291-xong
+    duLieu:
+      doc: theo-khach
+      benhNhan: $benhNhan[0]
+kiemDem:
+  - id: doanh-thu-ngay
+    ten: Tổng doanh thu trong ngày (29.1)
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: tongGiaLichHenDaThanhToan
+    donVi: VND
+  - id: doanh-thu-khach-chinh
+    ten: Doanh thu theo khách hàng chính (29.2)
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: doanhThuKhachChinh
+    donVi: VND
+  - id: so-luot-check-in
+    ten: Số lượt check-in
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: soCheckIn
+    donVi: lượt

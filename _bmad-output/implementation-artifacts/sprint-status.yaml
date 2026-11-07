@@ -14,11 +14,11 @@ sprint_planning:
     moi chuyen ready-for-dev.
 
 epics:
-  - { id: epic-1, title: Khung chay & an toan moi truong, status: in-progress }
-  - { id: epic-2, title: Kich ban & sinh du lieu, status: backlog }
+  - { id: epic-1, title: Khung chay & an toan moi truong, status: done }
+  - { id: epic-2, title: Kich ban & sinh du lieu, status: in-progress }
   - { id: epic-3, title: Thuc thi nhieu vai & stream, status: in-progress }
-  - { id: epic-4, title: Oracle & kiem dem bao cao, status: backlog }
-  - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: backlog }
+  - { id: epic-4, title: Oracle & kiem dem bao cao, status: in-progress }
+  - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: in-progress }
 
 sprints:
   - id: sprint-1
@@ -26,34 +26,46 @@ sprints:
     started: 2026-11-07
     goal: Nen khung chay + spike stream
     stories:
-      - { id: S1.1, title: Khoi tao monorepo + Docker Compose, status: ready-for-dev }
-      - { id: S1.2, title: Cau hinh moi truong + allowlist UAT + chan Production, status: ready-for-dev }
-      - { id: S1.3, title: Kho lan chay + run_id + nhat ky, status: ready-for-dev }
-      - { id: S3.0, title: Spike stream CDP screencast vs noVNC, status: ready-for-dev }
+      - { id: S1.1, title: Khoi tao monorepo + Docker Compose, status: done }
+      - { id: S1.2, title: Cau hinh moi truong + allowlist UAT + chan Production, status: done }
+      - { id: S1.3, title: Kho lan chay + run_id + nhat ky, status: done }
+      - { id: S3.0, title: Spike stream CDP screencast vs noVNC, status: in-progress }
   - id: sprint-2
-    status: planned
+    status: active
     goal: Nap kich ban + xem 1 vai chay
     stories:
-      - { id: S2.1, title: Schema kich ban + validate, status: ready-for-dev }
-      - { id: S2.2, title: Thu vien kich ban tren giao dien, status: ready-for-dev }
-      - { id: S2.3, title: Sinh du lieu gia danh tinh theo run_id, status: ready-for-dev }
-      - { id: S2.4, title: Don du lieu theo run_id, status: ready-for-dev }
-      - { id: S3.1, title: Worker Playwright dang nhap 1 vai, status: ready-for-dev }
-      - { id: S3.2, title: Stream 1 phien ve luoi xem, status: ready-for-dev }
+      - { id: S2.1, title: Schema kich ban + validate, status: done }
+      - { id: S2.2, title: Thu vien kich ban tren giao dien, status: done }
+      - { id: S2.3, title: Sinh du lieu gia danh tinh theo run_id, status: done }
+      - { id: S2.4, title: Don du lieu theo run_id, status: in-progress }
+      - { id: S3.1, title: Worker Playwright dang nhap 1 vai, status: in-progress }
+      - { id: S3.2, title: Stream 1 phien ve luoi xem, status: in-progress }
   - id: sprint-3
-    status: planned
+    status: active
     goal: Nhieu vai dong bo + kiem dem doanh thu
     stories:
-      - { id: S3.3, title: Nhieu vai + diem dong bo theo su kien, status: ready-for-dev }
-      - { id: S3.4, title: Che do Chay nhanh headless + video, status: ready-for-dev }
-      - { id: S4.1, title: Oracle doanh thu doc lap, status: ready-for-dev }
-      - { id: S4.2, title: Reconciler doi chieu UI/API/DB, status: ready-for-dev }
-      - { id: S4.3, title: Kich ban mau day du toi bao cao 29.1/29.2, status: ready-for-dev }
+      - { id: S3.3, title: Nhieu vai + diem dong bo theo su kien, status: in-progress }
+      - { id: S3.4, title: Che do Chay nhanh headless + video, status: in-progress }
+      - { id: S4.1, title: Oracle doanh thu doc lap, status: done }
+      - { id: S4.2, title: Reconciler doi chieu UI/API/DB, status: done }
+      - { id: S4.3, title: Kich ban mau day du toi bao cao 29.1/29.2, status: in-progress }
   - id: sprint-4
-    status: planned
+    status: active
     goal: Dong goi MVP chay tren may that
     stories:
-      - { id: S5.1, title: Trang ket qua lan chay + video + tai bao cao, status: ready-for-dev }
-      - { id: S5.2, title: Hang doi + Dung an toan, status: ready-for-dev }
-      - { id: S5.3, title: Kiem tra co sandbox kenh ngoai, status: ready-for-dev }
-      - { id: S5.4, title: Tai lieu cai dat va chay tren may that, status: ready-for-dev }
+      - { id: S5.1, title: Trang ket qua lan chay + video + tai bao cao, status: done }
+      - { id: S5.2, title: Hang doi + Dung an toan, status: done }
+      - { id: S5.3, title: Kiem tra co sandbox kenh ngoai, status: done }
+      - { id: S5.4, title: Tai lieu cai dat va chay tren may that, status: in-progress }
+
+handover:
+  date: 2026-11-07
+  note: >
+    Dot cuoi Epic 5 hoan thanh: S5.3, S5.1, S5.2 done; S5.4 in-progress
+    (AC-1/2/3 dat, AC-4 chua - kiem chung tren moi truong sach chi thuc
+    hien duoc tren may that co Docker). Cong cuoi chuong trinh: 178/178
+    test dat, typecheck + lint 5/5 goi, verify:compose dat. Cac story
+    in-progress con lai (S2.4, S3.0, S3.1, S3.2, S3.3, S3.4, S4.3, S5.4)
+    deu la no kiem chung may that, da gom du vao Checklist Muc 6 cua
+    docs/HUONG-DAN-MAY-THAT.md; chay xong Muc 6 thi dong cac story nay
+    (S4.3 dat -> epic-4 done). Bao cao: docs/BAO-CAO-TU-NGHIEM-THU.md.

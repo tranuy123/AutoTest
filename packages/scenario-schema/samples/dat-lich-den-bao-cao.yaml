@@ -1,0 +1,88 @@
+# Kich ban mau day du (S2.1 AC-4): dat lich -> xac nhan -> check-in ->
+# kham -> thanh toan -> bao cao doanh thu. Dung lam mau goc cho thu vien
+# kich ban (S2.2 nap san) va kich ban mau nghiem thu o S4.3.
+schemaVersion: 2
+id: dat-lich-den-bao-cao
+ten: Đặt lịch đến báo cáo doanh thu
+moTa: Luồng đầy đủ 5 vai — bệnh nhân đặt lịch, lễ tân xác nhận, bệnh nhân check-in, bác sĩ khám, thu ngân thanh toán, quản lý xem báo cáo doanh thu và đối chiếu số liệu.
+cacVai:
+  - benh-nhan
+  - le-tan
+  - bac-si
+  - thu-ngan
+  - quan-ly
+sinhDuLieu:
+  benhNhan:
+    soLuong: 2
+  dichVu:
+    - ma: DV-KHAM-TQ
+      ten: Khám tổng quát
+      gia: 300000
+    - ma: DV-TAI-KHAM
+      ten: Tái khám
+      gia: 200000
+  lichHen:
+    soLuong: 2
+cacBuoc:
+  - id: dang-nhap-le-tan
+    vai: le-tan
+    hanhDong: dang-nhap
+    phatSuKien: le-tan-san-sang
+  - id: dat-lich
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: le-tan-san-sang
+    phatSuKien: lich-da-dat
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: DV-KHAM-TQ
+  - id: xac-nhan-lich
+    vai: le-tan
+    hanhDong: xac-nhan-lich
+    choSuKien: lich-da-dat
+    phatSuKien: lich-da-xac-nhan
+  - id: check-in
+    vai: benh-nhan
+    hanhDong: check-in
+    choSuKien: lich-da-xac-nhan
+    phatSuKien: da-check-in
+  - id: bat-dau-kham
+    vai: bac-si
+    hanhDong: bat-dau-kham
+    choSuKien: da-check-in
+    phatSuKien: dang-kham
+  - id: ket-thuc-kham
+    vai: bac-si
+    hanhDong: ket-thuc-kham
+    choSuKien: dang-kham
+    phatSuKien: kham-xong
+  - id: thanh-toan
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: kham-xong
+    phatSuKien: da-thanh-toan
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: xem-bao-cao
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: da-thanh-toan
+kiemDem:
+  - id: doanh-thu-ngay
+    ten: Doanh thu trong ngày
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: tongGiaLichHenDaThanhToan
+    donVi: VND
+  - id: so-lich-hen
+    ten: Số lịch hẹn đã tạo
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soLichHen
+    donVi: lịch
+  - id: so-luot-check-in
+    ten: Số lượt check-in
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soCheckIn
+    donVi: lượt

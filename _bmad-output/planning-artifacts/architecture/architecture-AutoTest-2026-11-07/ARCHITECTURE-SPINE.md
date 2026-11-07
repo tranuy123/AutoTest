@@ -31,6 +31,7 @@ Ngày: 2026-11-07 · Trạng thái: Đề xuất, phụ thuộc QD-1..QD-4 trong
 - **AD-6 Chặn Production ở Orchestrator:** Trước khi cấp phát worker, Orchestrator kiểm URL đích thuộc danh sách cho phép (allowlist trong cấu hình môi trường). Control App không có khả năng ghi đè allowlist.
 - **AD-7 Stream là phụ, đúng/sai là chính:** Mất stream không được làm fail kịch bản; kết quả kiểm đếm vẫn phải hoàn thành và video bản ghi vẫn lưu để xem lại.
 - **AD-8 Hai chế độ dùng chung một engine:** Chế độ Xem và Chạy nhanh chỉ khác cấu hình phiên (headed+stream+slow-mo vs headless+song song), không fork logic kịch bản.
+- **AD-9 Stream bằng noVNC (chốt QD-3 qua spike S3.0, 2026-11-07):** Stream Gateway dùng noVNC (máy chủ X ảo + VNC phía worker, client `@novnc/novnc` phía Control App). Số đo trên VM 4 CPU/7,9 GB RAM: ở 4 phiên đồng thời noVNC đạt trễ hình median 116 ms / p95 205 ms, 0 đứt, trong khi CDP screencast đạt 904/1376 ms với 39 khoảng trống khung > 500 ms và sập hoàn toàn ở 8 phiên (median ~25 giây) vì nghẽn một kết nối điều khiển dùng chung. CDP screencast chỉ là dự phòng cho chế độ 1 phiên. Chi tiết và giới hạn đo (thay Xvnc cho Xvfb+x11vnc, phần ổn định 60 phút còn nợ do môi trường VM): `spikes/stream/BAO-CAO-SPIKE.md`.
 
 ## Luồng một lần chạy (Chế độ Xem)
 

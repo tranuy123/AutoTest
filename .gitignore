@@ -1,0 +1,25 @@
+# Phu thuoc va ban dung
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Moi truong va bi mat (chi .env.example duoc commit)
+.env
+.env.*
+!.env.example
+
+# Ket qua chay kiem thu
+test-results/
+playwright-report/
+runs/
+video/
+videos/
+*.webm
+
+# He dieu hanh / cong cu
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

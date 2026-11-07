@@ -1,0 +1,1 @@
+{"dependencies":{"@novnc/novnc":"^1.5.0","playwright":"1.65.0","ws":"^8.18.3"},"description":"Spike S3.0: do CDP screencast vs noVNC (Xvfb + x11vnc). Ma spike tach biet, khong thuoc monorepo san pham.","name":"spike-stream","private":true,"scripts":{"measure":"node lib/measure.js"},"type":"module","version":"0.1.0"}

@@ -1,0 +1,1 @@
+{"compilerOptions":{"paths":{"@autotest/oracle":["./src/index.ts"]}},"extends":"./tsconfig.json"}

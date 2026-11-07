@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@autotest/oracle": "workspace:*",
+    "playwright": "^1.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "eslint": "^9.39.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.1.0"
+  },
+  "main": "dist/index.js",
+  "name": "@autotest/runner",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint src",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "version": "0.1.0"
+}

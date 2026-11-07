@@ -1,0 +1,397 @@
+{
+  "spike": "S3.0",
+  "method": "novnc",
+  "sessionsRequested": 8,
+  "durationSec": 90,
+  "warmupSec": 10,
+  "startedAt": "2026-11-07T12:59:49.557Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 2146
+  },
+  "errors": [],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5901,
+      "bridgePort": 6901,
+      "browserPid": 12073,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 620.7,
+        "median": 529,
+        "p95": 1205,
+        "max": 1480,
+        "min": 209
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 84.7,
+      "bridgeBytesFromVnc": 7805820,
+      "bridgeBytesToVnc": 57950,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:27.130Z"
+    },
+    {
+      "index": 1,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5902,
+      "bridgePort": 6902,
+      "browserPid": 12210,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 541.8,
+        "median": 504,
+        "p95": 1313,
+        "max": 1427,
+        "min": 139
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 80.8,
+      "bridgeBytesFromVnc": 7443419,
+      "bridgeBytesToVnc": 56112,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:27.727Z"
+    },
+    {
+      "index": 2,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5903,
+      "bridgePort": 6903,
+      "browserPid": 12342,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 483.3,
+        "median": 443,
+        "p95": 1007,
+        "max": 1417,
+        "min": 129
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 78.1,
+      "bridgeBytesFromVnc": 7197568,
+      "bridgeBytesToVnc": 57912,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.062Z"
+    },
+    {
+      "index": 3,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5904,
+      "bridgePort": 6904,
+      "browserPid": 12480,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 481.2,
+        "median": 321,
+        "p95": 883,
+        "max": 2105,
+        "min": 192
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 76.5,
+      "bridgeBytesFromVnc": 7046335,
+      "bridgeBytesToVnc": 55530,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.343Z"
+    },
+    {
+      "index": 4,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5905,
+      "bridgePort": 6905,
+      "browserPid": 12615,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 517.9,
+        "median": 418,
+        "p95": 1126,
+        "max": 1284,
+        "min": 204
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 70.1,
+      "bridgeBytesFromVnc": 6458216,
+      "bridgeBytesToVnc": 56302,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.531Z"
+    },
+    {
+      "index": 5,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5906,
+      "bridgePort": 6906,
+      "browserPid": 12751,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 553.3,
+        "median": 420,
+        "p95": 1302,
+        "max": 1306,
+        "min": 298
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 78.8,
+      "bridgeBytesFromVnc": 7263355,
+      "bridgeBytesToVnc": 52848,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.649Z"
+    },
+    {
+      "index": 6,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5907,
+      "bridgePort": 6907,
+      "browserPid": 12887,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 558.1,
+        "median": 419,
+        "p95": 923,
+        "max": 1212,
+        "min": 209
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 69.9,
+      "bridgeBytesFromVnc": 6437597,
+      "bridgeBytesToVnc": 50858,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.823Z"
+    },
+    {
+      "index": 7,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5908,
+      "bridgePort": 6908,
+      "browserPid": 13023,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 27,
+        "avg": 566.1,
+        "median": 492,
+        "p95": 968,
+        "max": 1309,
+        "min": 206
+      },
+      "staleEvents": 0,
+      "decodeSamples": 27,
+      "decodeNullSamples": 0,
+      "streamKBps": 60.3,
+      "bridgeBytesFromVnc": 5556116,
+      "bridgeBytesToVnc": 49574,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T13:02:28.951Z"
+    }
+  ],
+  "viewerBrowserPid": 13154,
+  "measureStartedAt": "2026-11-07T13:00:46.921Z",
+  "measureEndedAt": "2026-11-07T13:02:19.235Z",
+  "resourceSampleCount": 41,
+  "resources": {
+    "phien": {
+      "rssMB": {
+        "n": 41,
+        "avg": 3400.4,
+        "median": 3337.4,
+        "p95": 3934.2,
+        "max": 4219.9,
+        "min": 3127.7
+      },
+      "cpuPct": {
+        "n": 41,
+        "avg": 63.5,
+        "median": 51.9,
+        "p95": 145.4,
+        "max": 150.3,
+        "min": 11.5
+      }
+    },
+    "ha-tang-x-vnc": {
+      "rssMB": {
+        "n": 41,
+        "avg": 179.8,
+        "median": 177.4,
+        "p95": 198.2,
+        "max": 204.5,
+        "min": 170
+      },
+      "cpuPct": {
+        "n": 41,
+        "avg": 8.8,
+        "median": 7,
+        "p95": 19,
+        "max": 21.4,
+        "min": 1
+      }
+    },
+    "phia-xem": {
+      "rssMB": {
+        "n": 41,
+        "avg": 1195.5,
+        "median": 1168.8,
+        "p95": 1444.2,
+        "max": 1482.3,
+        "min": 1133
+      },
+      "cpuPct": {
+        "n": 41,
+        "avg": 53.7,
+        "median": 38,
+        "p95": 143.6,
+        "max": 168.2,
+        "min": 5
+      }
+    },
+    "cong-stream-trong-harness": {
+      "rssMB": {
+        "n": 41,
+        "avg": 167.5,
+        "median": 161.5,
+        "p95": 187.5,
+        "max": 188.7,
+        "min": 146.1
+      },
+      "cpuPct": {
+        "n": 41,
+        "avg": 10.7,
+        "median": 9.9,
+        "p95": 18.1,
+        "max": 19.9,
+        "min": 4.5
+      }
+    },
+    "perSession": {
+      "rssMB": 425.1,
+      "cpuPct": 7.9
+    }
+  },
+  "latencyAll": {
+    "n": 216,
+    "avg": 540.3,
+    "median": 478,
+    "p95": 1205,
+    "max": 2105,
+    "min": 129
+  },
+  "endedAt": "2026-11-07T13:02:29.332Z",
+  "logTail": [
+    "[xvnc5!] \nSat Nov  7 13:00:22 2026\n Connections: accepted: 127.0.0.1::42786\n",
+    "[xvnc5!] \nSat Nov  7 13:00:23 2026\n SConnection: Client needs protocol version 3.8\n",
+    "[xvnc5!]  SConnection: Client requests security type None(1)\n",
+    "[xvnc5!]  VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888\n",
+    "[xvnc5!]  VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian bgr888\n",
+    "[xvnc6!] \nSat Nov  7 13:00:27 2026\n Connections: accepted: 127.0.0.1::36124\n",
+    "[xvnc6!]  SConnection: Client needs protocol version 3.8\n",
+    "[xvnc6!] \nSat Nov  7 13:00:28 2026\n SConnection: Client requests security type None(1)\n VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888\n",
+    "[xvnc6!]  VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian bgr888\n",
+    "[xvnc7!] \nSat Nov  7 13:00:31 2026\n Connections: accepted: 127.0.0.1::51106\n",
+    "[xvnc7!]  SConnection: Client needs protocol version 3.8\n",
+    "[xvnc7!]  SConnection: Client requests security type None(1)\n",
+    "[xvnc7!]  VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888\n",
+    "[xvnc7!] \nSat Nov  7 13:00:32 2026\n VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian bgr888\n",
+    "[xvnc1!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::44204: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2898\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.619 krects, 3.13749 Mpixels\n EncodeManager:            25.2969 KiB (1:485.23 ratio)\n EncodeM",
+    "[xvnc3!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::38552: Clean disconnection\n EncodeManager: Framebuffer updates: 2789\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.599 krects, 3.03832 Mpixels\n EncodeManager:            24.9844 KiB (1:475.785 ratio)\n EncodeManager:     Bitm",
+    "[xvnc2!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::52074: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2951\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.959 krects, 3.06217 Mpixels\n EncodeManager:            30.6094 KiB (1:391.533 ratio)\n Encode",
+    "[xvnc0!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::56716: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 3003\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.973 krects, 3.03607 Mpixels\n EncodeManager:            30.8281 KiB (1:385.452 ratio)\n Encode",
+    "[xvnc4!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::59332: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2804\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.898 krects, 2.94551 Mpixels\n EncodeManager:            29.6562 KiB (1:388.726 ratio)\n Encode",
+    "[xvnc6!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::36124: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2527\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.497 krects, 2.94798 Mpixels\n EncodeManager:            23.3906 KiB (1:493.065 ratio)\n Encode",
+    "[xvnc5!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::42786: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2626\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.611 krects, 2.91657 Mpixels\n EncodeManager:            25.1719 KiB (1:453.353 ratio)\n Encode",
+    "[xvnc7!] \nSat Nov  7 13:02:25 2026\n VNCSConnST:  closing 127.0.0.1::51106: read: Connection reset by peer (104)\n EncodeManager: Framebuffer updates: 2462\n EncodeManager:   Tight:\n EncodeManager:     Solid: 1.445 krects, 2.79318 Mpixels\n EncodeManager:            22.5781 KiB (1:483.999 ratio)\n Encode",
+    "[xvnc1!]          7.16521 MiB (1:11.2706 ratio)\n Connections: closed: 127.0.0.1::44204\n ComparingUpdateTracker: 298.679 Mpixels in / 18.7209 Mpixels out\n ComparingUpdateTracker: (1:15.9543 ratio)\n",
+    "[xvnc3!]      6.78313 MiB (1:11.6017 ratio)\n Connections: closed: 127.0.0.1::38552\n ComparingUpdateTracker: 288.681 Mpixels in / 18.2325 Mpixels out\n ComparingUpdateTracker: (1:15.8333 ratio)\n",
+    "[xvnc2!]          6.99762 MiB (1:11.4542 ratio)\n Connections: closed: 127.0.0.1::52074\n ComparingUpdateTracker: 298.113 Mpixels in / 18.5718 Mpixels out\n ComparingUpdateTracker: (1:16.0519 ratio)\n",
+    "[xvnc0!]          7.56435 MiB (1:10.6924 ratio)\n Connections: closed: 127.0.0.1::56716\n ComparingUpdateTracker: 293.62 Mpixels in / 18.5196 Mpixels out\n ComparingUpdateTracker: (1:15.8546 ratio)\n",
+    "[xvnc4!]          6.07616 MiB (1:12.2063 ratio)\n Connections: closed: 127.0.0.1::59332\n ComparingUpdateTracker: 284.218 Mpixels in / 17.4074 Mpixels out\n ComparingUpdateTracker: (1:16.3275 ratio)\n",
+    "[xvnc5!]          6.83713 MiB (1:11.5664 ratio)\n Connections: closed: 127.0.0.1::42786\n ComparingUpdateTracker: 272.741 Mpixels in / 18.1696 Mpixels out\n ComparingUpdateTracker: (1:15.0109 ratio)\n",
+    "[xvnc7!]          5.21395 MiB (1:13.3237 ratio)\n Connections: closed: 127.0.0.1::51106\n ComparingUpdateTracker: 249.518 Mpixels in / 16.4774 Mpixels out\n ComparingUpdateTracker: (1:15.1431 ratio)\n",
+    "[xvnc6!]          6.059 MiB (1:11.8413 ratio)\n Connections: closed: 127.0.0.1::36124\n ComparingUpdateTracker: 264.396 Mpixels in / 16.613 Mpixels out\n ComparingUpdateTracker: (1:15.915 ratio)\n"
+  ]
+}

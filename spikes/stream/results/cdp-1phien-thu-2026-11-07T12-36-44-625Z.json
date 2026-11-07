@@ -1,0 +1,34 @@
+{
+  "spike": "S3.0",
+  "method": "cdp",
+  "sessionsRequested": 1,
+  "durationSec": 30,
+  "warmupSec": 8,
+  "startedAt": "2026-11-07T12:36:44.625Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 528
+  },
+  "errors": [
+    "phien 0: TypeError: browser.process is not a function"
+  ],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": true,
+      "crashed": false,
+      "t0": null,
+      "launchError": "TypeError: browser.process is not a function"
+    }
+  ],
+  "fatalError": "TypeError: viewerBrowser.process is not a function\n    at main (file:///home/hatch/workspace/AutoTest-dev/spikes/stream/lib/measure.js:246:45)\n    at async file:///home/hatch/workspace/AutoTest-dev/spikes/stream/lib/measure.js:408:1",
+  "endedAt": "2026-11-07T12:36:48.011Z",
+  "logTail": [
+    "[xvfb!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n> Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n> Warning:          Could not resolve ",
+    "[xvfb!] Could not resolve keysym XF86RadarOverlay\n> Warning:          Could not resolve keysym XF86TraditionalSonar\n> Warning:          Could not resolve keysym XF86ClearvuSonar\n> Warning:          Could not resolve keysym XF86SidevuSonar\n> Warning:          Could not resolve keysym XF86NavInfo\n",
+    "[xvfb!] Errors from xkbcomp are not fatal to the X server\n"
+  ]
+}
