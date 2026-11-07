@@ -9,7 +9,10 @@ RUN corepack enable
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @autotest/runner build
+# Dau "..." sau ten goi: build ca cac goi phu thuoc trong workspace
+# (@autotest/oracle) TRUOC runner, theo dung thu tu phu thuoc.
+# Thieu buoc nay, tsc cua runner loi TS2307 vi oracle chua co dist/.
+RUN pnpm --filter @autotest/runner... build
 
 FROM node:22-slim AS runtime
 ENV PNPM_HOME=/pnpm

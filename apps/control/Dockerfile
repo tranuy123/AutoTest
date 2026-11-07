@@ -6,7 +6,10 @@ RUN corepack enable
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @autotest/control build
+# Dau "..." sau ten goi: build ca goi phu thuoc trong workspace
+# (@autotest/scenario-schema) TRUOC control. Thieu buoc nay, Next build
+# loi khong tim thay module vi scenario-schema chua co dist/.
+RUN pnpm --filter @autotest/control... build
 
 FROM node:22-slim AS runtime
 ENV PNPM_HOME=/pnpm

@@ -461,6 +461,18 @@ Trang kết quả/bước `kiem-tra-sandbox` ghi rõ lý do. Kiểm tra: JSON t�
 hiệu nói `false` là hệ thống chặn — đây là cơ chế bảo vệ khách hàng thật,
 không tắt được bằng giao diện.
 
+### 7.7. Docker build lỗi TS2307 "Cannot find module '@autotest/oracle'"
+
+Đã gặp và đã sửa ngày 2026-11-08: bản cũ của cả 3 Dockerfile chỉ build đúng
+service của mình mà không build trước các gói phụ thuộc trong workspace
+(`@autotest/oracle`, `@autotest/scenario-schema` — cả hai trỏ vào `dist/`
+nên chưa build là chưa tồn tại với trình biên dịch). Trên máy ảo phát triển
+lỗi bị che vì luôn build toàn workspace bằng `pnpm -r build`. Bản sửa đổi
+lệnh build thành `pnpm --filter @autotest/<service>... build` (dấu `...` =
+build cả gói phụ thuộc trước, đúng thứ tự). Nếu gặp lại lỗi này: kiểm tra
+bạn đang ở bản mới nhất của `main` (`git pull`), rồi chạy lại `SETUP.bat`
+hoặc `docker compose up -d --build`.
+
 ---
 
 ## Mục 8 — Đầu vào cần chủ dự án cấp cho vòng UAT thật
