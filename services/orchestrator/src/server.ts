@@ -11,8 +11,14 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 import { toEnvironmentStatus, type AppConfig } from "./config.js";
+import { BannedDataError } from "./data-generator.js";
 import { logEvent } from "./log.js";
 import type { RunLogger } from "./run-logger.js";
+import {
+  RunNotFoundError,
+  ScenarioMissingError,
+  type DataService,
+} from "./run-data-store.js";
 import {
   RUN_MODE_LABELS,
   RUN_RESULT_LABELS,
@@ -21,6 +27,11 @@ import {
   type RunService,
   type RunStatus,
 } from "./run-store.js";
+import {
+  ScenarioExistsError,
+  toScenarioSummary,
+  type ScenarioService,
+} from "./scenario-store.js";
 import { evaluateTarget } from "./target-guard.js";
 
 export interface HealthResponse {
@@ -62,9 +73,13 @@ export interface OrchestratorDeps {
   /** Kho lan chay (S1.3). Vang mat thi POST /api/runs tra 501 sau khi qua cong chan. */
   runService?: RunService;
   runLogger?: RunLogger;
+  /** Thu vien kich ban (S2.2). */
+  scenarioService?: ScenarioService;
+  /** Sinh du lieu theo run_id (S2.3). */
+  dataService?: DataService;
 }
 
-const RUN_STATUSES: RunStatus[] = ["dang-chay", "qua", "hong", "dung"];
+const RUN_STATUSES: RunStatus[] = ["dang-cho", "dang-chay", "qua", "hong", "dung"];
 const RUN_RESULTS: RunResult[] = ["qua", "hong", "dung"];
 
 function toRunView(run: RunRecord) {
@@ -129,8 +144,34 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           return;
         }
         const mode = typeof body.mode === "string" ? body.mode : "xem-truc-tiep";
-        const run = await deps.runService.createRun({ scenarioId, mode, targetUrl });
+        // S2.2: giao dien tao lan chay o trang thai cho (thuc thi thuoc Epic 3);
+        // API truc tiep mac dinh giu trang thai dang-chay nhu S1.3.
+        const run = await deps.runService.createRun({
+          scenarioId,
+          mode,
+          targetUrl,
+          ...(body.queue === true ? { status: "dang-cho" as const } : {}),
+        });
         deps.runLogger?.log({ event: "run_created", runId: run.runId });
+        // S2.3: tuy chon sinh du lieu ngay khi tao lan chay.
+        if (body.generateData === true && deps.dataService) {
+          try {
+            const input = await deps.dataService.generateForRun(
+              run.runId,
+              typeof body.seed === "string" ? body.seed : undefined,
+            );
+            sendJson(res, 201, {
+              ...toRunView(run),
+              input: { seed: input.seed, thongKe: input.data.thongKe },
+            });
+          } catch (error) {
+            sendJson(res, 201, {
+              ...toRunView(run),
+              dataError: error instanceof Error ? error.message : "khong sinh duoc du lieu",
+            });
+          }
+          return;
+        }
         sendJson(res, 201, toRunView(run));
         return;
       }
@@ -224,6 +265,154 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
         });
         deps.runLogger?.log({ event: "run_finished", runId, result });
         sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      /* ---------------- Thu vien kich ban (S2.2) ---------------- */
+
+      if (req.method === "GET" && url.pathname === "/api/scenarios") {
+        if (!deps.scenarioService) {
+          sendJson(res, 501, { error: "scenario_store_not_configured" });
+          return;
+        }
+        sendJson(res, 200, { scenarios: await deps.scenarioService.listSummaries() });
+        return;
+      }
+
+      if (req.method === "POST" && url.pathname === "/api/scenarios") {
+        if (!deps.scenarioService) {
+          sendJson(res, 501, { error: "scenario_store_not_configured" });
+          return;
+        }
+        const body = await readJsonBody(req);
+        const filename = typeof body.filename === "string" ? body.filename : "kich-ban";
+        const format = body.format === "excel" ? "excel" : "yaml";
+        try {
+          const result = await deps.scenarioService.importScenario({
+            filename,
+            format,
+            ...(typeof body.contentText === "string" ? { contentText: body.contentText } : {}),
+            ...(typeof body.contentBase64 === "string"
+              ? { contentBase64: body.contentBase64 }
+              : {}),
+          });
+          if (!result.ok) {
+            // Validate chan tu dau: khong nap do dang (S2.2 AC-2).
+            sendJson(res, 422, { errors: result.errors });
+            return;
+          }
+          sendJson(res, 201, {
+            scenario: toScenarioSummary(result.record),
+            message: `Đã nạp kịch bản '${result.record.name}' vào thư viện`,
+          });
+        } catch (error) {
+          if (error instanceof ScenarioExistsError) {
+            sendJson(res, 409, { error: "scenario_exists", message: error.message });
+            return;
+          }
+          throw error;
+        }
+        return;
+      }
+
+      const scenarioDetailMatch = /^\/api\/scenarios\/([^/]+)$/.exec(url.pathname);
+      if (scenarioDetailMatch && (req.method === "GET" || req.method === "DELETE")) {
+        if (!deps.scenarioService) {
+          sendJson(res, 501, { error: "scenario_store_not_configured" });
+          return;
+        }
+        const id = decodeURIComponent(scenarioDetailMatch[1] ?? "");
+        if (req.method === "GET") {
+          const record = await deps.scenarioService.getScenario(id);
+          if (!record) {
+            sendJson(res, 404, { error: "scenario_not_found" });
+            return;
+          }
+          sendJson(res, 200, {
+            ...toScenarioSummary(record),
+            yaml: record.yaml,
+            scenario: record.scenario,
+          });
+          return;
+        }
+        const deleted = await deps.scenarioService.deleteScenario(id);
+        if (!deleted) {
+          sendJson(res, 404, { error: "scenario_not_found" });
+          return;
+        }
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      /* ---------------- Du lieu sinh theo run_id (S2.3) ---------------- */
+
+      const generateMatch = /^\/api\/runs\/([^/]+)\/generate-data$/.exec(url.pathname);
+      if (req.method === "POST" && generateMatch) {
+        if (!deps.dataService) {
+          sendJson(res, 501, { error: "data_service_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(generateMatch[1] ?? "");
+        const body = await readJsonBody(req);
+        try {
+          const input = await deps.dataService.generateForRun(
+            runId,
+            typeof body.seed === "string" ? body.seed : undefined,
+          );
+          sendJson(res, 201, input);
+        } catch (error) {
+          if (error instanceof RunNotFoundError) {
+            sendJson(res, 404, { error: "run_not_found", message: error.message });
+            return;
+          }
+          if (error instanceof ScenarioMissingError) {
+            sendJson(res, 409, { error: "scenario_missing", message: error.message });
+            return;
+          }
+          if (error instanceof BannedDataError) {
+            sendJson(res, 422, { error: "banned_data", message: error.message, violations: error.violations });
+            return;
+          }
+          throw error;
+        }
+        return;
+      }
+
+      const inputExportMatch = /^\/api\/runs\/([^/]+)\/input\/export$/.exec(url.pathname);
+      if (req.method === "GET" && inputExportMatch) {
+        if (!deps.dataService) {
+          sendJson(res, 501, { error: "data_service_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(inputExportMatch[1] ?? "");
+        const input = await deps.dataService.getRunInput(runId);
+        if (!input) {
+          sendJson(res, 404, { error: "run_input_not_found" });
+          return;
+        }
+        const payload = JSON.stringify(input.data, null, 2);
+        res.writeHead(200, {
+          "content-type": "application/json; charset=utf-8",
+          "content-disposition": `attachment; filename="input-${runId}.json"`,
+          "content-length": Buffer.byteLength(payload),
+        });
+        res.end(payload);
+        return;
+      }
+
+      const inputMatch = /^\/api\/runs\/([^/]+)\/input$/.exec(url.pathname);
+      if (req.method === "GET" && inputMatch) {
+        if (!deps.dataService) {
+          sendJson(res, 501, { error: "data_service_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(inputMatch[1] ?? "");
+        const input = await deps.dataService.getRunInput(runId);
+        if (!input) {
+          sendJson(res, 404, { error: "run_input_not_found" });
+          return;
+        }
+        sendJson(res, 200, input);
         return;
       }
 

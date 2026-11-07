@@ -1,11 +1,13 @@
-export default function ThuVien() {
-  return (
-    <>
-      <h1>Thư viện kịch bản</h1>
-      <p className="mo-ta">
-        Chức năng thư viện kịch bản sẽ được xây dựng ở Story S2.2 (Epic 2). Trang này là
-        khung điều hướng của S1.1.
-      </p>
-    </>
-  );
+/**
+ * Trang Thu vien kich ban (S2.2 AC-3): danh sach lay phia server,
+ * tim/chi tiet/xoa o ThuVienClient.
+ */
+import ThuVienClient from "../components/ThuVienClient";
+import { fetchScenarios } from "../../lib/orchestrator";
+
+export const dynamic = "force-dynamic";
+
+export default async function ThuVien() {
+  const res = await fetchScenarios();
+  return <ThuVienClient scenariosBanDau={res.scenarios} orchestratorOk={res.ok} />;
 }

@@ -1,26 +1,24 @@
 /**
- * @autotest/scenario-schema - khung (S1.1).
- * Cac kieu du lieu nen tang cho kich ban kiem thu.
- * Schema validate day du se duoc xay dung o Story S2.1 - o day chi co
- * kieu khai bao va hang so dung chung, chua co logic nghiep vu.
+ * @autotest/scenario-schema
+ * S1.1: kieu nen tang (vai, che do chay) - giu nguyen de tuong thich.
+ * S2.1: schema kich ban YAML day du + validate loi co cau truc (dong/truong,
+ * tieng Viet) + bo chuyen doi Excel -> YAML (QD-2).
  */
+export * from "./roles.js";
+export * from "./actions.js";
+export * from "./schema.js";
+export * from "./validate.js";
+export * from "./excel.js";
 
-/** Vai nguoi dung tham gia kich ban (khop 5 vai tren UAT cua CRM). */
-export type RoleId = "benh-nhan" | "le-tan" | "bac-si" | "thu-ngan" | "quan-ly";
-
-/** Danh sach vai theo dung thu tu hien thi tren giao dien. */
-export const ROLE_IDS: readonly RoleId[] = [
-  "benh-nhan",
-  "le-tan",
-  "bac-si",
-  "thu-ngan",
-  "quan-ly",
-] as const;
+import type { RoleId } from "./roles.js";
 
 /** Che do chay: xem truc tiep (co stream) hoac chay nhanh (headless). */
 export type RunMode = "xem-truc-tiep" | "chay-nhanh";
 
-/** Mot buoc trong kich ban: mot vai thuc hien mot hanh dong. */
+/**
+ * Mot buoc trong kich ban (khai bao khung cua S1.1).
+ * @deprecated Dung ScenarioStepDef trong schema.ts (S2.1) cho kich ban that.
+ */
 export interface ScenarioStep {
   /** Ma buoc duy nhat trong kich ban, vi du "dat-lich". */
   id: string;
@@ -32,15 +30,13 @@ export interface ScenarioStep {
   syncEvent?: string;
 }
 
-/** Khai bao mot kich ban kiem thu (dang khung, se mo rong o S2.1). */
+/**
+ * Khai bao mot kich ban kiem thu (dang khung S1.1).
+ * @deprecated Dung ScenarioDefinition trong schema.ts (S2.1).
+ */
 export interface Scenario {
   id: string;
   name: string;
   roles: RoleId[];
   steps: ScenarioStep[];
-}
-
-/** Tra ve danh sach vai duoi dang mang moi (khong sua hang so goc). */
-export function listRoleIds(): RoleId[] {
-  return [...ROLE_IDS];
 }

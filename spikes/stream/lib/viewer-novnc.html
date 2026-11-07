@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>Viewer noVNC (spike S3.0)</title>
+    <style>
+      body { margin: 0; background: #0f172a; }
+      #screen { width: 1280px; height: 720px; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="screen"></div>
+    <script type="module">
+      // Viewer noVNC that su: dung thu vien @novnc/novnc nhu Control App se dung.
+      import RFB from "/novnc/core/rfb.js";
+      const params = new URLSearchParams(location.search);
+      const ws = params.get("ws");
+      window.__stats = { connected: false, disconnects: 0, connects: 0 };
+      const rfb = new RFB(document.getElementById("screen"), ws, {});
+      rfb.scaleViewport = false;
+      rfb.resizeSession = false;
+      rfb.addEventListener("connect", () => {
+        window.__stats.connected = true;
+        window.__stats.connects++;
+      });
+      rfb.addEventListener("disconnect", () => {
+        window.__stats.connected = false;
+        window.__stats.disconnects++;
+      });
+      window.__rfb = rfb;
+      window.__canvas = () => document.querySelector("#screen canvas");
+    </script>
+  </body>
+</html>

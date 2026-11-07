@@ -1,0 +1,37 @@
+{
+  "spike": "S3.0",
+  "method": "novnc",
+  "sessionsRequested": 1,
+  "durationSec": 30,
+  "warmupSec": 8,
+  "startedAt": "2026-11-07T12:42:07.074Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 766
+  },
+  "errors": [],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": false,
+      "crashed": false,
+      "t0": null
+    }
+  ],
+  "fatalError": "Error: timeout cho cong 5901\n    at Socket.<anonymous> (file:///home/hatch/workspace/AutoTest-dev/spikes/stream/lib/measure.js:105:52)\n    at Socket.wrapper (node:events:639:12)\n    at Socket.emit (node:events:514:28)\n    at emitErrorNT (node:internal/streams/destroy:170:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:129:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+  "endedAt": "2026-11-07T12:42:27.174Z",
+  "logTail": [
+    "[xvnc0!] Unrecognized option: -MaxProcessorUsage\nuse: X [:<display>] [option]\n-a #                   default pointer acceleration (factor)\n-ac                    disable access control restrictions\n-audit int             set audit trail level\n-auth file             select authorization file\n-br     ",
+    "[xvnc0!] -help                  prints message with these options\n+iglx                  Allow creating indirect GLX contexts\n-iglx                  Prohibit creating indirect GLX contexts (default)\n-I                     ignore all remaining arguments\n-ld int                limit data space to N Kb",
+    "[xvnc0!]  listen for RFB protocol (default=)\n  rfbport        - TCP port to listen for RFB protocol (default=0)\n  QueryConnectTimeout - Number of seconds to show the Accept Connection dialog\n                   before rejecting the connection (default=10)\n  RawKeyboard    - Send keyboard events strai",
+    "[xvnc0!]  the level of output to log. Format is\n                   <log>:<target>:<level>[, ...]. (default=)\n  BlacklistTimeout - The initial timeout applied when a host is first\n                   black-listed. The host cannot re-attempt a connection until\n                   the timeout expires. (d",
+    "[xvnc0!] \n                   fails to authenticate. (default=1)\n  RemapKeys      - Comma-separated list of incoming keysyms to remap.  Mappings\n                   are expressed as two hex values, prefixed by 0x, and\n                   separated by -> (default=)\n  MaxCutText     - Maximum permitted l",
+    "[xvnc0!]  an incoming clipboard update\n                   (default=262144)\n  QueryConnect   - Prompt the local user to accept or reject incoming\n                   connections. (default=0)\n  AcceptSetDesktopSize - Accept set desktop size events from clients.\n                   (default=1)\n  SendCutT",
+    "[xvnc0!]  user inactivity (default=0)\n  MaxConnectionTime - Terminate when a client has been connected for s seconds\n                   (default=0)\n  MaxDisconnectionTime - Terminate when no client has been connected for s\n                   seconds (default=0)\n  IdleTimeout    - The number of secon",
+    "[xvnc0!]  Plain security type (including\n                   TLSPlain, X509Plain etc.) or RSA-AES security types (RA2,\n                   RA2ne, RA2_256, RA2ne_256) (default=)\n  pam_service    - Alias for PAMService\n  PAMService     - Service name for PAM password validation (default=vnc)\n  ImprovedH",
+    "[xvnc0!]   SecurityTypes  - Specify which security scheme to use (None, VncAuth, Plain,\n                   TLSNone, TLSVnc, TLSPlain, X509None, X509Vnc, X509Plain,\n                   RA2, RA2ne, RA2_256, RA2ne_256) (default=TLSVnc,VncAuth)\n  Password       - Obfuscated binary encoding of the passwor"
+  ]
+}

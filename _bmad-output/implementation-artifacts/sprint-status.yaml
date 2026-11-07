@@ -15,7 +15,7 @@ sprint_planning:
 
 epics:
   - { id: epic-1, title: Khung chay & an toan moi truong, status: done }
-  - { id: epic-2, title: Kich ban & sinh du lieu, status: backlog }
+  - { id: epic-2, title: Kich ban & sinh du lieu, status: in-progress }
   - { id: epic-3, title: Thuc thi nhieu vai & stream, status: in-progress }
   - { id: epic-4, title: Oracle & kiem dem bao cao, status: backlog }
   - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: backlog }
@@ -29,14 +29,14 @@ sprints:
       - { id: S1.1, title: Khoi tao monorepo + Docker Compose, status: done }
       - { id: S1.2, title: Cau hinh moi truong + allowlist UAT + chan Production, status: done }
       - { id: S1.3, title: Kho lan chay + run_id + nhat ky, status: done }
-      - { id: S3.0, title: Spike stream CDP screencast vs noVNC, status: ready-for-dev }
+      - { id: S3.0, title: Spike stream CDP screencast vs noVNC, status: in-progress }
   - id: sprint-2
-    status: planned
+    status: active
     goal: Nap kich ban + xem 1 vai chay
     stories:
-      - { id: S2.1, title: Schema kich ban + validate, status: ready-for-dev }
-      - { id: S2.2, title: Thu vien kich ban tren giao dien, status: ready-for-dev }
-      - { id: S2.3, title: Sinh du lieu gia danh tinh theo run_id, status: ready-for-dev }
+      - { id: S2.1, title: Schema kich ban + validate, status: done }
+      - { id: S2.2, title: Thu vien kich ban tren giao dien, status: done }
+      - { id: S2.3, title: Sinh du lieu gia danh tinh theo run_id, status: done }
       - { id: S2.4, title: Don du lieu theo run_id, status: ready-for-dev }
       - { id: S3.1, title: Worker Playwright dang nhap 1 vai, status: ready-for-dev }
       - { id: S3.2, title: Stream 1 phien ve luoi xem, status: ready-for-dev }

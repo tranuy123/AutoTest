@@ -1,0 +1,35 @@
+{
+  "spike": "S3.0",
+  "method": "novnc",
+  "sessionsRequested": 1,
+  "durationSec": 30,
+  "warmupSec": 8,
+  "startedAt": "2026-11-07T12:42:35.834Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 699
+  },
+  "errors": [],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": false,
+      "crashed": false,
+      "t0": null
+    }
+  ],
+  "fatalError": "Error: timeout cho cong 5901\n    at Socket.<anonymous> (file:///home/hatch/workspace/AutoTest-dev/spikes/stream/lib/measure.js:105:52)\n    at Socket.wrapper (node:events:639:12)\n    at Socket.emit (node:events:514:28)\n    at emitErrorNT (node:internal/streams/destroy:170:8)\n    at emitErrorCloseNT (node:internal/streams/destroy:129:3)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+  "endedAt": "2026-11-07T12:42:55.936Z",
+  "logTail": [
+    "[xvnc0!] (EE)",
+    "[xvnc0!]  ",
+    "[xvnc0!] \nFatal server error:\n",
+    "[xvnc0!] (EE)",
+    "[xvnc0!]  ",
+    "[xvnc0!] Server is already active for display 91\n\tIf this server is no longer running, remove /tmp/.X91-lock\n\tand start again.\n",
+    "[xvnc0!] (EE) \n"
+  ]
+}

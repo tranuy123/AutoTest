@@ -1,0 +1,339 @@
+{
+  "spike": "S3.0",
+  "method": "cdp",
+  "sessionsRequested": 8,
+  "durationSec": 90,
+  "warmupSec": 10,
+  "startedAt": "2026-11-07T12:49:14.809Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 2226
+  },
+  "errors": [],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 8592,
+      "streamAttached": true,
+      "framesSent": 1280,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.304Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 1,
+        "avg": 8008,
+        "median": 8008,
+        "p95": 8008,
+        "max": 8008,
+        "min": 8008
+      },
+      "staleEvents": 0,
+      "decodeSamples": 1,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1280,
+      "fps": 14.2,
+      "streamKBps": 701.1,
+      "frameGapsOver500ms": 215,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 1,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 8724,
+      "streamAttached": true,
+      "framesSent": 1282,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.515Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 1,
+        "avg": 14221,
+        "median": 14221,
+        "p95": 14221,
+        "max": 14221,
+        "min": 14221
+      },
+      "staleEvents": 0,
+      "decodeSamples": 1,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1282,
+      "fps": 14.2,
+      "streamKBps": 690.4,
+      "frameGapsOver500ms": 223,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 2,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 8858,
+      "streamAttached": true,
+      "framesSent": 1297,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.516Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 1,
+        "avg": 25107,
+        "median": 25107,
+        "p95": 25107,
+        "max": 25107,
+        "min": 25107
+      },
+      "staleEvents": 0,
+      "decodeSamples": 1,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1297,
+      "fps": 14.4,
+      "streamKBps": 690.9,
+      "frameGapsOver500ms": 212,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 3,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 9005,
+      "streamAttached": true,
+      "framesSent": 1275,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.515Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 1,
+        "avg": 41226,
+        "median": 41226,
+        "p95": 41226,
+        "max": 41226,
+        "min": 41226
+      },
+      "staleEvents": 0,
+      "decodeSamples": 1,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1275,
+      "fps": 14.2,
+      "streamKBps": 671.2,
+      "frameGapsOver500ms": 211,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 4,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 9149,
+      "streamAttached": true,
+      "framesSent": 1284,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.513Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 0,
+        "avg": null,
+        "median": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      },
+      "staleEvents": 0,
+      "decodeSamples": 1,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1284,
+      "fps": 14.3,
+      "streamKBps": 657.5,
+      "frameGapsOver500ms": 222,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 5,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 9327,
+      "streamAttached": true,
+      "framesSent": 1310,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.514Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 0,
+        "avg": null,
+        "median": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      },
+      "staleEvents": 0,
+      "decodeSamples": 0,
+      "decodeNullSamples": 1,
+      "framesViaRelay": 1310,
+      "fps": 14.6,
+      "streamKBps": 656.8,
+      "frameGapsOver500ms": 209,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 6,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 9462,
+      "streamAttached": true,
+      "framesSent": 1286,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.525Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 0,
+        "avg": null,
+        "median": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      },
+      "staleEvents": 0,
+      "decodeSamples": 0,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1286,
+      "fps": 14.3,
+      "streamKBps": 626.6,
+      "frameGapsOver500ms": 211,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    },
+    {
+      "index": 7,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 9595,
+      "streamAttached": true,
+      "framesSent": 1286,
+      "viewerReady": true,
+      "crashedAt": "2026-11-07T12:55:40.526Z",
+      "crashedDuringMeasure": true,
+      "latencyMs": {
+        "n": 0,
+        "avg": null,
+        "median": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      },
+      "staleEvents": 0,
+      "decodeSamples": 0,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 1286,
+      "fps": 14.3,
+      "streamKBps": 608.1,
+      "frameGapsOver500ms": 230,
+      "pubDisconnects": 0,
+      "subDisconnects": 1
+    }
+  ],
+  "viewerBrowserPid": 9732,
+  "measureStartedAt": "2026-11-07T12:51:17.529Z",
+  "measureEndedAt": "2026-11-07T12:55:40.646Z",
+  "resourceSampleCount": 90,
+  "resources": {
+    "phien": {
+      "rssMB": {
+        "n": 90,
+        "avg": 3124.2,
+        "median": 3312.2,
+        "p95": 3357,
+        "max": 3381.3,
+        "min": 1950.5
+      },
+      "cpuPct": {
+        "n": 90,
+        "avg": 20.1,
+        "median": 72.5,
+        "p95": 272.8,
+        "max": 375.5,
+        "min": -985.1
+      }
+    },
+    "ha-tang-x-vnc": {
+      "rssMB": {
+        "n": 90,
+        "avg": 66,
+        "median": 65.9,
+        "p95": 66.9,
+        "max": 67.1,
+        "min": 65.4
+      },
+      "cpuPct": {
+        "n": 90,
+        "avg": 0.4,
+        "median": 0.2,
+        "p95": 1.5,
+        "max": 2.4,
+        "min": 0
+      }
+    },
+    "phia-xem": {
+      "rssMB": {
+        "n": 90,
+        "avg": 611.8,
+        "median": 909.3,
+        "p95": 956.3,
+        "max": 985.9,
+        "min": 0
+      },
+      "cpuPct": {
+        "n": 90,
+        "avg": -32.1,
+        "median": 8.9,
+        "p95": 71.8,
+        "max": 98.5,
+        "min": -880.2
+      }
+    },
+    "cong-stream-trong-harness": {
+      "rssMB": {
+        "n": 90,
+        "avg": 291.2,
+        "median": 294.1,
+        "p95": 301.2,
+        "max": 301.5,
+        "min": 281.1
+      },
+      "cpuPct": {
+        "n": 90,
+        "avg": 7.5,
+        "median": 5.7,
+        "p95": 24.4,
+        "max": 32.8,
+        "min": -0.4
+      }
+    },
+    "perSession": {
+      "rssMB": 390.5,
+      "cpuPct": 2.5
+    }
+  },
+  "latencyAll": {
+    "n": 4,
+    "avg": 22140.5,
+    "median": 25107,
+    "p95": 41226,
+    "max": 41226,
+    "min": 8008
+  },
+  "endedAt": "2026-11-07T12:55:40.669Z",
+  "logTail": [
+    "[xvfb!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n> Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n> Warning:          Could not resolve ",
+    "[xvfb!] Could not resolve keysym XF86AutopilotEngageToggle\n> Warning:          Could not resolve keysym XF86MarkWaypoint\n> Warning:          Could not resolve keysym XF86Sos\n> Warning:          Could not resolve keysym XF86NavChart\n> Warning:          Could not resolve keysym XF86FishingChart\n> Warn",
+    "[xvfb!] Errors from xkbcomp are not fatal to the X server\n",
+    "[xvfb!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n> Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n> Warning:          Could not resolve "
+  ]
+}

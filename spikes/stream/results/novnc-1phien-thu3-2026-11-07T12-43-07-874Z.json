@@ -1,0 +1,161 @@
+{
+  "spike": "S3.0",
+  "method": "novnc",
+  "sessionsRequested": 1,
+  "durationSec": 30,
+  "warmupSec": 8,
+  "startedAt": "2026-11-07T12:43:07.874Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 665
+  },
+  "errors": [
+    "phien 0: viewer khong doc duoc dong ho sau 25s"
+  ],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": true,
+      "crashed": true,
+      "vncPort": 5901,
+      "bridgePort": 6901,
+      "browserPid": 6591,
+      "viewerReady": false,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 0,
+        "avg": null,
+        "median": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      },
+      "staleEvents": 0,
+      "decodeSamples": 245,
+      "decodeNullSamples": 245,
+      "streamKBps": 1020.7,
+      "bridgeBytesFromVnc": 31357095,
+      "bridgeBytesToVnc": 74632,
+      "bridgeConnections": 1,
+      "bridgeDisconnects": 0,
+      "viewerStats": {
+        "connected": true,
+        "disconnects": 0,
+        "connects": 1
+      },
+      "crashedAt": "2026-11-07T12:44:16.013Z"
+    }
+  ],
+  "viewerBrowserPid": 6718,
+  "measureStartedAt": "2026-11-07T12:43:45.502Z",
+  "measureEndedAt": "2026-11-07T12:44:15.535Z",
+  "resourceSampleCount": 19,
+  "resources": {
+    "phien": {
+      "rssMB": {
+        "n": 19,
+        "avg": 716.1,
+        "median": 660,
+        "p95": 880.8,
+        "max": 880.8,
+        "min": 541.6
+      },
+      "cpuPct": {
+        "n": 19,
+        "avg": 22.8,
+        "median": 23,
+        "p95": 28,
+        "max": 28,
+        "min": 18.5
+      }
+    },
+    "ha-tang-x-vnc": {
+      "rssMB": {
+        "n": 19,
+        "avg": 26.4,
+        "median": 26.7,
+        "p95": 27.1,
+        "max": 27.1,
+        "min": 24.7
+      },
+      "cpuPct": {
+        "n": 19,
+        "avg": 3.5,
+        "median": 3.5,
+        "p95": 4.5,
+        "max": 4.5,
+        "min": 3
+      }
+    },
+    "phia-xem": {
+      "rssMB": {
+        "n": 19,
+        "avg": 503.3,
+        "median": 529,
+        "p95": 555.2,
+        "max": 555.2,
+        "min": 352.4
+      },
+      "cpuPct": {
+        "n": 19,
+        "avg": 24.3,
+        "median": 25,
+        "p95": 27,
+        "max": 27,
+        "min": 19
+      }
+    },
+    "cong-stream-trong-harness": {
+      "rssMB": {
+        "n": 19,
+        "avg": 118.2,
+        "median": 118.3,
+        "p95": 119.3,
+        "max": 119.3,
+        "min": 116.4
+      },
+      "cpuPct": {
+        "n": 19,
+        "avg": 11.8,
+        "median": 11.5,
+        "p95": 14.5,
+        "max": 14.5,
+        "min": 8.5
+      }
+    },
+    "perSession": {
+      "rssMB": 716.1,
+      "cpuPct": 22.8
+    }
+  },
+  "latencyAll": {
+    "n": 0,
+    "avg": null,
+    "median": null,
+    "p95": null,
+    "max": null,
+    "min": null
+  },
+  "endedAt": "2026-11-07T12:44:16.280Z",
+  "logTail": [
+    "[xvnc0!] \nXvnc TigerVNC 1.13.1 - built 2024-04-01 08:26\nCopyright (C) 1999-2022 TigerVNC Team and many others (see README.rst)\nSee https://www.tigervnc.org for information on TigerVNC.\nUnderlying X server release 12101011\n\n",
+    "[xvnc0!] \nSat Nov  7 12:43:07 2026\n vncext:      VNC extension running!\n vncext:      Listening for VNC connections on local interface(s), port 5901\n vncext:      created VNC server for screen 0\n",
+    "[xvnc0!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n> Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n",
+    "[xvnc0!] > Warning:          Could not resolve keysym XF86NextElement\n> Warning:          Could not resolve keysym XF86PreviousElement\n> Warning:          Could not resolve keysym XF86AutopilotEngageToggle\n> Warning:          Could not resolve keysym XF86MarkWaypoint\n> Warning:          Could not re",
+    "[xvnc0!] Errors from xkbcomp are not fatal to the X server\n",
+    "[xvnc0!] [mi] mieq: warning: overriding existing handler (nil) with 0x614147f52580 for event 2\n[mi] mieq: warning: overriding existing handler (nil) with 0x614147f52580 for event 3\n",
+    "[xvnc0!] \nSat Nov  7 12:43:08 2026\n Connections: accepted: 127.0.0.1::46158\n",
+    "[xvnc0!]  VNCSConnST:  closing 127.0.0.1::46158: Clean disconnection\n EncodeManager: Framebuffer updates: 0\n EncodeManager:   Total: 0 rects, 0 pixels\n EncodeManager:          0 B (1:-nan ratio)\n Connections: closed: 127.0.0.1::46158\n ComparingUpdateTracker: 0 pixels in / 0 pixels out\n ComparingUpda",
+    "[xvnc0!] \nSat Nov  7 12:43:12 2026\n Connections: accepted: 127.0.0.1::46164\n",
+    "[xvnc0!]  SConnection: Client needs protocol version 3.8\n",
+    "[xvnc0!]  SConnection: Client requests security type None(1)\n",
+    "[xvnc0!]  VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian",
+    "[xvnc0!]  rgb888\n",
+    "[xvnc0!]  VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian bgr888\n",
+    "[xvnc0!] \nSat Nov  7 12:44:15 2026\n VNCSConnST:  closing 127.0.0.1::46164: Clean disconnection\n EncodeManager: Framebuffer updates: 3677\n EncodeManager:   Tight:\n EncodeManager:     Solid: 3.415 krects, 8.39174 Mpixels\n EncodeManager:            53.3594 KiB (1:615.079 ratio)\n EncodeManager:     Bitm",
+    "[xvnc0!]  3.04 krects, 21.6506 Mpixels\n EncodeManager:                  28.3771 MiB (1:2.91168 ratio)\n EncodeManager:   Total: 21.487 krects, 48.2401 Mpixels\n EncodeManager:          29.9196 MiB (1:6.15875 ratio)\n Connections: closed: 127.0.0.1::46164\n ComparingUpdateTracker: 494.842 Mpixels in / 37"
+  ]
+}

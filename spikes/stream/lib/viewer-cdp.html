@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <title>Viewer CDP screencast (spike S3.0)</title>
+    <style>
+      body { margin: 0; background: #0f172a; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <canvas id="view" width="1280" height="720"></canvas>
+    <script>
+      // Viewer gia lap Control App: nhan khung JPEG qua WebSocket, ve len canvas.
+      const params = new URLSearchParams(location.search);
+      const session = params.get("session") || "0";
+      const relay = params.get("relay") || "ws://127.0.0.1:8910";
+      window.__stats = { frames: 0, bytes: 0, connected: false, disconnects: 0, lastFrameAt: 0 };
+      const canvas = document.getElementById("view");
+      const ctx = canvas.getContext("2d");
+      const ws = new WebSocket(relay + "/?session=" + session + "&role=sub");
+      ws.binaryType = "blob";
+      ws.addEventListener("open", () => { window.__stats.connected = true; });
+      ws.addEventListener("close", () => {
+        window.__stats.connected = false;
+        window.__stats.disconnects++;
+      });
+      ws.addEventListener("message", async (ev) => {
+        window.__stats.bytes += ev.data.size || 0;
+        try {
+          const bmp = await createImageBitmap(ev.data);
+          ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+          bmp.close();
+          window.__stats.frames++;
+          window.__stats.lastFrameAt = Date.now();
+        } catch { /* khung loi thi bo qua, van dem o phia relay */ }
+      });
+      window.__canvas = () => canvas;
+    </script>
+  </body>
+</html>

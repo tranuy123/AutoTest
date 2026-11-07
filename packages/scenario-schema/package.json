@@ -10,7 +10,9 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./package.json": "./package.json",
+    "./samples/*": "./samples/*"
   },
   "main": "dist/index.js",
   "name": "@autotest/scenario-schema",
@@ -23,5 +25,10 @@
   },
   "type": "module",
   "types": "dist/index.d.ts",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "yaml": "^2.9.1",
+    "zod": "^3.25.76"
+  }
 }

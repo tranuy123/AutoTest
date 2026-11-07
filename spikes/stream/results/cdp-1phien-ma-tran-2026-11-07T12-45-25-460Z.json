@@ -1,0 +1,153 @@
+{
+  "spike": "S3.0",
+  "method": "cdp",
+  "sessionsRequested": 1,
+  "durationSec": 90,
+  "warmupSec": 10,
+  "startedAt": "2026-11-07T12:45:25.460Z",
+  "machine": {
+    "hostname": "htch-runtime",
+    "cpuCount": 4,
+    "cpuModel": "AMD EPYC 9D25 126-Core Processor",
+    "totalMemMB": 7934,
+    "freeMemMBatStart": 1152
+  },
+  "errors": [],
+  "sessions": [
+    {
+      "index": 0,
+      "launched": true,
+      "crashed": true,
+      "browserPid": 7424,
+      "streamAttached": true,
+      "framesSent": 3989,
+      "viewerReady": true,
+      "crashedDuringMeasure": false,
+      "latencyMs": {
+        "n": 593,
+        "avg": 134.1,
+        "median": 122,
+        "p95": 202,
+        "max": 299,
+        "min": 38
+      },
+      "staleEvents": 0,
+      "decodeSamples": 593,
+      "decodeNullSamples": 0,
+      "framesViaRelay": 3985,
+      "fps": 44.3,
+      "streamKBps": 2138.8,
+      "frameGapsOver500ms": 0,
+      "pubDisconnects": 0,
+      "subDisconnects": 0,
+      "viewerStats": {
+        "frames": 3951,
+        "bytes": 196047193,
+        "connected": true,
+        "disconnects": 0,
+        "lastFrameAt": 1794055629209
+      },
+      "crashedAt": "2026-11-07T12:47:09.555Z"
+    }
+  ],
+  "viewerBrowserPid": 7549,
+  "measureStartedAt": "2026-11-07T12:45:39.125Z",
+  "measureEndedAt": "2026-11-07T12:47:09.200Z",
+  "resourceSampleCount": 49,
+  "resources": {
+    "phien": {
+      "rssMB": {
+        "n": 49,
+        "avg": 1021.6,
+        "median": 1039.1,
+        "p95": 1070.5,
+        "max": 1073.6,
+        "min": 934
+      },
+      "cpuPct": {
+        "n": 49,
+        "avg": 83.8,
+        "median": 83.5,
+        "p95": 89,
+        "max": 92,
+        "min": 75
+      }
+    },
+    "ha-tang-x-vnc": {
+      "rssMB": {
+        "n": 49,
+        "avg": 21.1,
+        "median": 21.2,
+        "p95": 22,
+        "max": 22,
+        "min": 19.7
+      },
+      "cpuPct": {
+        "n": 49,
+        "avg": 0.5,
+        "median": 0.5,
+        "p95": 1,
+        "max": 1,
+        "min": 0
+      }
+    },
+    "phia-xem": {
+      "rssMB": {
+        "n": 49,
+        "avg": 505.1,
+        "median": 491,
+        "p95": 610,
+        "max": 621.3,
+        "min": 451
+      },
+      "cpuPct": {
+        "n": 49,
+        "avg": 38.9,
+        "median": 39.4,
+        "p95": 43,
+        "max": 44,
+        "min": 33.5
+      }
+    },
+    "cong-stream-trong-harness": {
+      "rssMB": {
+        "n": 49,
+        "avg": 175.9,
+        "median": 177.3,
+        "p95": 200.2,
+        "max": 200.6,
+        "min": 141.4
+      },
+      "cpuPct": {
+        "n": 49,
+        "avg": 17.6,
+        "median": 17,
+        "p95": 24.5,
+        "max": 24.5,
+        "min": 10.5
+      }
+    },
+    "perSession": {
+      "rssMB": 1021.6,
+      "cpuPct": 83.8
+    }
+  },
+  "latencyAll": {
+    "n": 593,
+    "avg": 134.1,
+    "median": 122,
+    "p95": 202,
+    "max": 299,
+    "min": 38
+  },
+  "endedAt": "2026-11-07T12:47:09.701Z",
+  "logTail": [
+    "[xvfb!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n",
+    "[xvfb!] > Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n",
+    "[xvfb!] > Warning:          Could not resolve keysym XF86NextElement\n> Warning:          Could not resolve keysym XF86PreviousElement\n> Warning:          Could not resolve keysym XF86AutopilotEngageToggle\n> Warning:          Could not resolve keysym XF86MarkWaypoint\n> Warning:          Could not res",
+    "[xvfb!] Errors from xkbcomp are not fatal to the X server\n",
+    "[xvfb!] The XKEYBOARD keymap compiler (xkbcomp) reports:\n> Warning:          Could not resolve keysym XF86CameraAccessEnable\n> Warning:          Could not resolve keysym XF86CameraAccessDisable\n> Warning:          Could not resolve keysym XF86CameraAccessToggle\n",
+    "[xvfb!] > Warning:          Could not resolve keysym XF86NextElement\n> Warning:          Could not resolve keysym XF86PreviousElement\n> Warning:          Could not resolve keysym XF86AutopilotEngageToggle\n> Warning:          Could not resolve keysym XF86MarkWaypoint\n> Warning:          Could not res",
+    "[xvfb!] Errors from xkbcomp are not fatal to the X server\n"
+  ]
+}

@@ -13,8 +13,8 @@ import { Pool } from "pg";
 
 import { buildRunId, formatRunDay } from "./run-id.js";
 
-export type RunStatus = "dang-chay" | "qua" | "hong" | "dung";
-export type RunResult = Exclude<RunStatus, "dang-chay">;
+export type RunStatus = "dang-cho" | "dang-chay" | "qua" | "hong" | "dung";
+export type RunResult = "qua" | "hong" | "dung";
 
 export interface RunRecord {
   runId: string;
@@ -301,6 +301,8 @@ export class RunService {
     scenarioId: string;
     mode: string;
     targetUrl: string;
+    /** Trang thai khoi tao: mac dinh "dang-chay"; giao dien S2.2 dung "dang-cho" (hang doi, Epic 3 moi thuc thi). */
+    status?: RunStatus;
   }): Promise<RunRecord> {
     const now = new Date();
     const day = formatRunDay(now);
@@ -310,7 +312,7 @@ export class RunService {
       scenarioId: input.scenarioId,
       mode: input.mode,
       targetUrl: input.targetUrl,
-      status: "dang-chay",
+      status: input.status ?? "dang-chay",
       startedAt: now.toISOString(),
       finishedAt: null,
       videoPath: null,
@@ -351,6 +353,7 @@ export class RunService {
 }
 
 export const RUN_RESULT_LABELS: Record<RunStatus, string> = {
+  "dang-cho": "Đang chờ chạy",
   "dang-chay": "Đang chạy",
   qua: "Qua",
   hong: "Hỏng",
