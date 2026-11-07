@@ -1,6 +1,16 @@
 # EXPERIENCE — AutoTest (BMAD Phase 2/3: UX)
 
-Ngày: 2026-11-07 · Nguyên tắc: học từ lỗi của e2e viewer cũ — nút phải rõ nghĩa, mở app là biết bắt đầu ở đâu.
+Ngày: 2026-11-07 · Bản 2 (2026-11-07, khi chủ dự án yêu cầu thiết kế giao diện trước): bổ sung đặc tả từng màn hình để dựng bản mẫu tương tác. Nguyên tắc: học từ lỗi của e2e viewer cũ — nút phải rõ nghĩa, mở app là biết bắt đầu ở đâu.
+
+## Điều hướng
+
+4 mục cố định: **Trang chính** (chạy kịch bản), **Thư viện kịch bản**, **Lịch sử chạy**, **Cấu hình môi trường**. Đang ở mục nào thì mục đó sáng rõ kèm chữ đậm; không ẩn điều hướng trong menu hamburger trên desktop.
+
+## Màn hình Cấu hình môi trường (điều kiện trước khi chạy)
+
+- Hiện URL UAT đang nối + trạng thái "Đúng UAT — được phép chạy" (xanh + chữ) hoặc "Không phải UAT — đã chặn" (đỏ + chữ, nút Bắt đầu bị khóa kèm lý do).
+- Danh sách tài khoản theo vai (bệnh nhân, lễ tân, bác sĩ, thu ngân, quản lý): chỉ hiện "đã cấu hình / chưa cấu hình", không bao giờ hiện mật khẩu.
+- Trạng thái sandbox kênh ngoài: "Zalo/Facebook/SMS đang ở chế độ sandbox — an toàn" hoặc cảnh báo.
 
 ## Màn hình chính — "Bắt đầu ở đây, 3 bước"
 
