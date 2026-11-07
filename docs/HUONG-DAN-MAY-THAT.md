@@ -29,6 +29,14 @@ Chế độ phát triển không Docker (chỉ khi cần sửa code): Node.js �
 
 ## Mục 2 — Cài đặt từ đầu
 
+> **Windows — đường nhanh:** clone repo xong **double-click `SETUP.bat`** ở
+> thư mục gốc. Script tự làm các việc của Mục 2 + Mục 4 (kiểm tra/cài Docker
+> Desktop và Node.js qua winget nếu thiếu, `pnpm install`, tạo `.env`, mở
+> Notepad để điền, `docker compose up -d --build`, chờ healthy rồi mở sẵn
+> http://localhost:3100). Sau khi script chạy xong, quay lại Mục 3 để đối
+> chiếu từng biến `.env` và tiếp tục từ Mục 5. Nội dung script nằm ở
+> `scripts/setup.ps1`, đọc trước nếu muốn biết rõ từng bước.
+
 ```bash
 git clone https://github.com/tranuy123/AutoTest.git
 cd AutoTest

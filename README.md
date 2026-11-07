@@ -24,6 +24,14 @@ Hệ thống tự động kiểm thử trên môi trường **UAT** cho CRM_Loya
 
 ## Chạy trên máy thật
 
+**Windows — cài đặt nhanh:** tải/clone repo rồi **double-click `SETUP.bat`** ở
+thư mục gốc. Script tự nâng quyền Admin, kiểm tra (và cài qua winget nếu thiếu)
+Docker Desktop + Node.js, bật pnpm, `pnpm install`, tạo `.env` từ
+`.env.example` và mở Notepad để điền, `docker compose up -d --build`, chờ cả
+hai cổng 3100/3101 sẵn sàng rồi tự mở http://localhost:3100. Toàn bộ logic nằm
+trong [`scripts/setup.ps1`](scripts/setup.ps1) — đọc được từng bước trước khi
+chạy nếu muốn.
+
 Yêu cầu duy nhất: Docker + Docker Compose trên máy thật. Hướng dẫn đầy đủ ở
 [`docs/HUONG-DAN-MAY-THAT.md`](docs/HUONG-DAN-MAY-THAT.md); tóm tắt:
 
