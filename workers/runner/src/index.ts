@@ -1,12 +1,18 @@
 /**
- * @autotest/runner - khung (S1.1).
- * Worker thuc thi Playwright se duoc xay dung o Epic 3 (S3.1 tro di).
- * Ban khung chi lam hai viec: ghi file "san sang" de healthcheck cua
- * docker-compose nhan biet, va giu tien trinh song trong khi cho viec.
- * Ten goi "runner" trung lap theo AD-8 (khong dat theo che do Xem/Nhanh).
+ * @autotest/runner - worker thuc thi Playwright (Epic 3).
+ * Diem vao: khoi dong may chu worker (API phien + Stream Gateway noVNC)
+ * tren cong RUNNER_PORT (mac dinh 3102), ghi file "san sang" cho
+ * healthcheck cua docker-compose va giu tien trinh song.
+ * Logic nam o cac module: server.ts (API), engine.ts (thuc thi buoc),
+ * browser.ts (phien Chromium), xvnc.ts (man hinh ao), stream-gateway.ts.
  */
 import { writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+
+import { PlaywrightSessionFactory } from "./browser.js";
+import { createRunnerServer } from "./server.js";
+import { StreamGateway } from "./stream-gateway.js";
+import { XvncManager } from "./xvnc.js";
 
 export interface RunnerInfo {
   name: string;
@@ -19,14 +25,20 @@ export function describeRunner(): RunnerInfo {
 }
 
 export function startRunner(): void {
-  const readyFile = process.env.RUNNER_READY_FILE ?? "/tmp/runner-ready";
-  const info = describeRunner();
-  writeFileSync(readyFile, `${info.name} ${new Date().toISOString()}\n`, "utf8");
-  console.log(`[runner] san sang (che do cho viec), ready file: ${readyFile}`);
-  // Giu tien trinh song; Epic 3 se thay vong cho nay bang hang doi viec that.
-  setInterval(() => {
-    // heartbeat: khong lam gi, chi giu event loop
-  }, 30_000);
+  const port = Number(process.env.RUNNER_PORT ?? 3102);
+  const gateway = new StreamGateway((message) => console.log(`[runner] ${message}`));
+  const server = createRunnerServer({
+    factory: new PlaywrightSessionFactory(),
+    xvnc: new XvncManager(),
+    gateway,
+  });
+  server.listen(port, () => {
+    console.log(`[runner] dang nghe tai cong ${port}`);
+    const readyFile = process.env.RUNNER_READY_FILE ?? "/tmp/runner-ready";
+    const info = describeRunner();
+    writeFileSync(readyFile, `${info.name} ${new Date().toISOString()}\n`, "utf8");
+    console.log(`[runner] san sang, ready file: ${readyFile}`);
+  });
 }
 
 const isMain = process.argv[1]

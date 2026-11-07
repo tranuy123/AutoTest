@@ -63,3 +63,57 @@ export const ROLE_LABELS: Record<string, string> = {
 export function roleLabel(id: string): string {
   return ROLE_LABELS[id] ?? id;
 }
+
+/* ---------------- Xem truc tiep (S3.2) + chay nhanh (S3.4) ---------------- */
+
+export interface RoleStreamView {
+  roleId: string;
+  label: string;
+  state: "cho" | "dang-chay" | "xong" | "loi";
+  stateLabel: string;
+  currentStepId: string | null;
+  currentStepLabel: string | null;
+  sessionId: string | null;
+  stream: { state: string; wsUrl: string | null } | null;
+}
+
+export interface RunStreamsView {
+  runId: string;
+  mode: string;
+  fastMode: boolean;
+  roles: RoleStreamView[];
+}
+
+export async function fetchRunStreams(runId: string): Promise<RunStreamsView | null> {
+  try {
+    const res = await fetch(
+      `${ORCHESTRATOR_URL}/api/runs/${encodeURIComponent(runId)}/streams`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as RunStreamsView;
+  } catch {
+    return null;
+  }
+}
+
+export interface RunDetailView {
+  runId: string;
+  status: string;
+  resultLabel: string;
+  cleanupStatus: string | null;
+  videoPath: string | null;
+}
+
+export async function fetchRunDetail(runId: string): Promise<RunDetailView | null> {
+  try {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/runs/${encodeURIComponent(runId)}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as RunDetailView;
+    return data;
+  } catch {
+    return null;
+  }
+}

@@ -153,6 +153,18 @@ try {
     await page.getByText("Đang chờ chạy").first().isVisible(),
   );
 
+  // 3b) Trang lan chay o che do nhanh: lop phu "khong co stream" (S3.4 AC-3)
+  const noticeText = await page.locator(".thong-bao.tot").last().innerText();
+  const runId = /AUTOTEST_\d{8}_\d{3}/.exec(noticeText)?.[0] ?? "";
+  check("Lay duoc run_id tu thong bao tao lan chay", runId.length > 0, runId);
+  await page.goto(`${base}/lan-chay/${runId}`);
+  await page.getByText("Chế độ chạy nhanh — không có stream").waitFor();
+  check("Trang lan chay nhanh: lop phu khong-stream dung ban mau (S3.4)", true);
+  check(
+    "Trang lan chay nhanh: co bang tien do theo vai",
+    await page.getByText("Lễ tân").first().isVisible(),
+  );
+
   // 4) Thu vien: tim, chi tiet, xoa co xac nhan
   await page.goto(base + "/thu-vien");
   await page.getByText("Kịch bản khói giao diện").waitFor();

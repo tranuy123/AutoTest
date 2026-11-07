@@ -310,6 +310,97 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* --- Bo sung Epic 3: luoi stream theo vai (S3.2) + lop phu chay nhanh (S3.4) --- */
+
+.luoi-stream {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.o-stream {
+  background: var(--be-mat);
+  border: 2px solid var(--be-mat-sang);
+  border-radius: 12px;
+  padding: 12px 14px 10px;
+}
+
+.o-stream.vien-cho {
+  border-color: var(--be-mat-sang);
+}
+
+.o-stream.vien-dang-chay {
+  border-color: var(--cho);
+}
+
+.o-stream.vien-xong {
+  border-color: var(--qua);
+}
+
+.o-stream.vien-loi {
+  border-color: var(--hong);
+}
+
+.dau-o-stream {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.trang-thai-o {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.khung-stream {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.man-hinh-stream {
+  position: absolute;
+  inset: 0;
+}
+
+.man-hinh-stream canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.man-hinh-stream.trong {
+  background: var(--nen);
+}
+
+.lop-phu-stream {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  color: var(--chu-phu);
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+.chan-o-stream {
+  margin-top: 10px;
+  color: var(--chu-phu);
+  font-size: 14px;
+}
+
+.lop-phu-chay-nhanh {
+  border: 1px dashed var(--cho);
+}
+
 @media (max-width: 760px) {
   .nhom-che-do {
     grid-template-columns: 1fr;

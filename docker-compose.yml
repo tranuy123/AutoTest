@@ -48,6 +48,13 @@ services:
       ROLE_QUAN_LY_USERNAME: ${ROLE_QUAN_LY_USERNAME:-}
       ROLE_QUAN_LY_PASSWORD: ${ROLE_QUAN_LY_PASSWORD:-}
       CHANNELS_SANDBOX: ${CHANNELS_SANDBOX:-}
+      # Epic 3: noi voi worker (runner) + thu muc artifact dung chung
+      RUNNER_URL: http://runner:3102
+      ORCHESTRATOR_CALLBACK_URL: http://orchestrator:3101
+      STREAM_GATEWAY_WS_URL: ws://localhost:${RUNNER_PORT:-3102}
+      AUTOTEST_DATA_DIR: /data
+    volumes:
+      - run_data:/data
     ports:
       - "${ORCHESTRATOR_PORT:-3101}:3101"
     depends_on:
@@ -70,7 +77,14 @@ services:
       dockerfile: workers/runner/Dockerfile
     environment:
       ORCHESTRATOR_URL: http://orchestrator:3101
+      RUNNER_PORT: "3102"
       RUNNER_READY_FILE: /tmp/runner-ready
+    volumes:
+      # Cung volume voi orchestrator: video/anh cua lan chay ghi o day.
+      - run_data:/data
+    ports:
+      # Publish de trinh duyet cua nguoi dung noi WebSocket xem stream (S3.2).
+      - "${RUNNER_PORT:-3102}:3102"
     depends_on:
       orchestrator:
         condition: service_healthy
@@ -98,3 +112,4 @@ services:
 
 volumes:
   db_data:
+  run_data:

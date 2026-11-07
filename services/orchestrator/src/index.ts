@@ -12,9 +12,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { BatchService } from "./batch.js";
+import { CleanupService, HttpCrmCleanupClient } from "./cleanup.js";
 import { ConfigError, loadConfig } from "./config.js";
 import { EMPTY_BANNED_LIST, type BannedDataList } from "./data-generator.js";
+import {
+  EntityRegistry,
+  InMemoryEntityRepository,
+  PgEntityRepository,
+} from "./entity-registry.js";
+import { RunEventBus } from "./event-bus.js";
+import { RoleStatusStore } from "./role-status.js";
 import { createRunLogger } from "./run-logger.js";
+import { RunExecutor } from "./run-executor.js";
 import {
   DataService,
   InMemoryRunDataRepository,
@@ -27,6 +37,7 @@ import {
   ScenarioService,
 } from "./scenario-store.js";
 import { createOrchestratorServer } from "./server.js";
+import { HttpWorkerClient } from "./worker-client.js";
 
 // Tim .env o thu muc hien tai hoac goc repo (khi chay bang pnpm tu thu muc goi).
 for (const candidate of [resolve(process.cwd(), ".env"), resolve(process.cwd(), "../../.env")]) {
@@ -100,12 +111,76 @@ if (bannedFile && existsSync(bannedFile)) {
 }
 const dataService = new DataService(dataRepository, runService, scenarioService, bannedList);
 
+/* ---------------- Epic 3: thuc thi nhieu vai + stream ---------------- */
+
+const bus = new RunEventBus();
+const roleStatus = new RoleStatusStore();
+
+const entityRepository = config.databaseUrl
+  ? new PgEntityRepository(config.databaseUrl)
+  : new InMemoryEntityRepository();
+const registry = new EntityRegistry(entityRepository);
+await registry.init();
+
+const cleanupService = new CleanupService({
+  registry,
+  client: new HttpCrmCleanupClient({
+    ...(process.env.CRM_CLEANUP_PATH_TEMPLATE
+      ? { pathTemplate: process.env.CRM_CLEANUP_PATH_TEMPLATE }
+      : {}),
+    ...(process.env.CRM_CLEANUP_TOKEN ? { token: process.env.CRM_CLEANUP_TOKEN } : {}),
+  }),
+  runService,
+  targetBaseUrlOf: async (runId) => {
+    const detail = await runService.getRunWithSteps(runId);
+    return detail?.run.targetUrl ?? null;
+  },
+  tenant: config.testTenant,
+});
+
+const runnerUrl = process.env.RUNNER_URL ?? "http://localhost:3102";
+const worker = new HttpWorkerClient(runnerUrl);
+const executor = new RunExecutor({
+  config,
+  runService,
+  scenarioService,
+  dataService,
+  worker,
+  bus,
+  roleStatus,
+  cleanupService,
+  artifactsRoot: resolve(process.env.AUTOTEST_DATA_DIR ?? "runs-data"),
+  callbackBaseUrl:
+    process.env.ORCHESTRATOR_CALLBACK_URL ?? `http://localhost:${config.port}`,
+  ...(process.env.MAX_PARALLEL_SESSIONS
+    ? { maxConcurrentSessions: Number(process.env.MAX_PARALLEL_SESSIONS) }
+    : {}),
+  ...(process.env.VIEW_PACE_MS ? { viewPaceMs: Number(process.env.VIEW_PACE_MS) } : {}),
+  keepVideoOnPass: process.env.VIDEO_KEEP_ON_PASS === "true",
+});
+
+const batchService = new BatchService({
+  runService,
+  executor,
+  ...(process.env.BATCH_CONCURRENCY
+    ? { concurrency: Number(process.env.BATCH_CONCURRENCY) }
+    : {}),
+});
+
 const server = createOrchestratorServer({
   config,
   runService,
   runLogger: createRunLogger(),
   scenarioService,
   dataService,
+  executor,
+  bus,
+  roleStatus,
+  registry,
+  cleanupService,
+  batchService,
+  worker,
+  streamGatewayWsUrl: process.env.STREAM_GATEWAY_WS_URL ?? "ws://localhost:3102",
 });
 server.listen(config.port, () => {
   console.log(`[orchestrator] dang nghe tai cong ${config.port}`);

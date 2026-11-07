@@ -10,9 +10,17 @@
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
-import { toEnvironmentStatus, type AppConfig } from "./config.js";
+import { STEP_ACTIONS } from "@autotest/scenario-schema";
+
+import type { BatchService } from "./batch.js";
+import type { CleanupService } from "./cleanup.js";
+import { ROLE_DEFINITIONS, toEnvironmentStatus, type AppConfig } from "./config.js";
 import { BannedDataError } from "./data-generator.js";
+import { SyncTimeoutError, type RunEventBus } from "./event-bus.js";
+import type { EntityRegistry } from "./entity-registry.js";
 import { logEvent } from "./log.js";
+import type { RoleStatusStore } from "./role-status.js";
+import type { RunExecutor } from "./run-executor.js";
 import type { RunLogger } from "./run-logger.js";
 import {
   RunNotFoundError,
@@ -33,6 +41,7 @@ import {
   type ScenarioService,
 } from "./scenario-store.js";
 import { evaluateTarget } from "./target-guard.js";
+import type { WorkerClient, WorkerSessionResult } from "./worker-client.js";
 
 export interface HealthResponse {
   status: "ok";
@@ -77,6 +86,19 @@ export interface OrchestratorDeps {
   scenarioService?: ScenarioService;
   /** Sinh du lieu theo run_id (S2.3). */
   dataService?: DataService;
+  /** Bo thuc thi nhieu vai (S3.3) + cac thanh phan phu tro cua Epic 3. */
+  executor?: RunExecutor;
+  bus?: RunEventBus;
+  roleStatus?: RoleStatusStore;
+  /** So dang ky thuc the + bo don du lieu (S2.4). */
+  registry?: EntityRegistry;
+  cleanupService?: CleanupService;
+  /** Dot chay nhanh (S3.4). */
+  batchService?: BatchService;
+  /** Client worker - dung de gop trang thai stream cho luoi xem (S3.2). */
+  worker?: WorkerClient;
+  /** Base URL WebSocket cua Stream Gateway (vd ws://localhost:3102). */
+  streamGatewayWsUrl?: string;
 }
 
 const RUN_STATUSES: RunStatus[] = ["dang-cho", "dang-chay", "qua", "hong", "dung"];
@@ -208,7 +230,13 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           sendJson(res, 404, { error: "run_not_found" });
           return;
         }
-        sendJson(res, 200, { ...toRunView(detail.run), steps: detail.steps });
+        sendJson(res, 200, {
+          ...toRunView(detail.run),
+          steps: detail.steps,
+          // S3.3/S2.4: trang thai phien theo vai va bao cao don (neu da co).
+          roles: deps.roleStatus?.listByRun(detail.run.runId) ?? [],
+          cleanup: deps.cleanupService?.getReport(detail.run.runId) ?? null,
+        });
         return;
       }
 
@@ -413,6 +441,320 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           return;
         }
         sendJson(res, 200, input);
+        return;
+      }
+
+      /* ---------------- Thuc thi nhieu vai (Epic 3) ---------------- */
+
+      const startMatch = /^\/api\/runs\/([^/]+)\/start$/.exec(url.pathname);
+      if (req.method === "POST" && startMatch) {
+        if (!deps.executor || !deps.runService) {
+          sendJson(res, 501, { error: "executor_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(startMatch[1] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, { error: "run_not_found" });
+          return;
+        }
+        if (deps.executor.isActive(runId)) {
+          sendJson(res, 409, { error: "run_already_active" });
+          return;
+        }
+        // Cong chan AD-6 ap dung ca khi bat dau thuc thi.
+        const evaluation = evaluateTarget(detail.run.targetUrl, config.allowlist);
+        if (!evaluation.allowed) {
+          sendJson(res, 403, {
+            blocked: true,
+            allowed: false,
+            reason: evaluation.reason,
+            message: "Không phải UAT — đã chặn",
+          });
+          return;
+        }
+        void deps.executor.startRun(runId).catch(() => undefined);
+        sendJson(res, 202, { accepted: true, runId });
+        return;
+      }
+
+      const eventsMatch = /^\/api\/internal\/runs\/([^/]+)\/events$/.exec(url.pathname);
+      if (req.method === "POST" && eventsMatch) {
+        if (!deps.bus) {
+          sendJson(res, 501, { error: "event_bus_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(eventsMatch[1] ?? "");
+        const body = await readJsonBody(req);
+        const name = typeof body.name === "string" ? body.name : "";
+        const fromRole = typeof body.fromRole === "string" ? body.fromRole : "";
+        if (!name || !fromRole) {
+          sendJson(res, 400, { error: "missing_event_fields" });
+          return;
+        }
+        const payload: Record<string, string | number | boolean> = {};
+        if (typeof body.payload === "object" && body.payload !== null) {
+          for (const [key, value] of Object.entries(
+            body.payload as Record<string, unknown>,
+          )) {
+            if (
+              typeof value === "string" ||
+              typeof value === "number" ||
+              typeof value === "boolean"
+            ) {
+              payload[key] = value;
+            }
+          }
+        }
+        const event = deps.bus.emit({ runId, name, payload, fromRole });
+        sendJson(res, 201, { ok: true, emittedAt: event.emittedAt });
+        return;
+      }
+
+      const waitMatch = /^\/api\/internal\/runs\/([^/]+)\/events\/wait$/.exec(url.pathname);
+      if (req.method === "GET" && waitMatch) {
+        if (!deps.bus) {
+          sendJson(res, 501, { error: "event_bus_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(waitMatch[1] ?? "");
+        const name = url.searchParams.get("name") ?? "";
+        const role = url.searchParams.get("role") ?? "";
+        const timeoutRaw = Number(url.searchParams.get("timeoutMs") ?? 120_000);
+        const timeoutMs = Math.min(300_000, Math.max(1_000, Number.isFinite(timeoutRaw) ? timeoutRaw : 120_000));
+        const expectedFromRole = url.searchParams.get("expectedFromRole");
+        if (!name || !role) {
+          sendJson(res, 400, { error: "missing_wait_fields" });
+          return;
+        }
+        try {
+          const event = await deps.bus.waitFor({
+            runId,
+            name,
+            waitingRole: role,
+            timeoutMs,
+            ...(expectedFromRole ? { expectedFromRole } : {}),
+          });
+          sendJson(res, 200, {
+            name: event.name,
+            payload: event.payload,
+            fromRole: event.fromRole,
+            emittedAt: event.emittedAt,
+          });
+        } catch (error) {
+          if (error instanceof SyncTimeoutError) {
+            sendJson(res, 408, { error: "sync_timeout", message: error.message });
+            return;
+          }
+          throw error;
+        }
+        return;
+      }
+
+      const roleStatusMatch = /^\/api\/internal\/runs\/([^/]+)\/roles\/([^/]+)\/status$/.exec(
+        url.pathname,
+      );
+      if (req.method === "POST" && roleStatusMatch) {
+        if (!deps.roleStatus) {
+          sendJson(res, 501, { error: "role_status_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(roleStatusMatch[1] ?? "");
+        const roleId = decodeURIComponent(roleStatusMatch[2] ?? "");
+        const body = await readJsonBody(req);
+        const state = body.state;
+        if (state !== "dang-chay" && state !== "xong" && state !== "loi") {
+          sendJson(res, 400, { error: "invalid_role_state" });
+          return;
+        }
+        deps.roleStatus.set({
+          runId,
+          roleId,
+          state,
+          ...(typeof body.sessionId === "string" ? { sessionId: body.sessionId } : {}),
+          ...(typeof body.currentStepId === "string"
+            ? { currentStepId: body.currentStepId }
+            : {}),
+        });
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      const entitiesMatch = /^\/api\/internal\/runs\/([^/]+)\/entities$/.exec(url.pathname);
+      if (req.method === "POST" && entitiesMatch) {
+        if (!deps.registry) {
+          sendJson(res, 501, { error: "registry_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(entitiesMatch[1] ?? "");
+        const body = await readJsonBody(req);
+        const type = typeof body.type === "string" ? body.type : "";
+        const entityId = typeof body.entityId === "string" ? body.entityId : "";
+        if (!type || !entityId) {
+          sendJson(res, 400, { error: "missing_entity_fields" });
+          return;
+        }
+        await deps.registry.register({
+          runId,
+          type,
+          entityId,
+          ...(typeof body.createdByStepId === "string"
+            ? { createdByStepId: body.createdByStepId }
+            : {}),
+        });
+        sendJson(res, 201, { ok: true });
+        return;
+      }
+
+      const finishedMatch = /^\/api\/internal\/sessions\/([^/]+)\/finished$/.exec(
+        url.pathname,
+      );
+      if (req.method === "POST" && finishedMatch) {
+        if (!deps.executor) {
+          sendJson(res, 501, { error: "executor_not_configured" });
+          return;
+        }
+        const body = (await readJsonBody(req)) as unknown as WorkerSessionResult;
+        deps.executor.handleSessionFinished(body);
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      const streamsMatch = /^\/api\/runs\/([^/]+)\/streams$/.exec(url.pathname);
+      if (req.method === "GET" && streamsMatch) {
+        if (!deps.runService || !deps.roleStatus) {
+          sendJson(res, 501, { error: "streams_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(streamsMatch[1] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, { error: "run_not_found" });
+          return;
+        }
+        const scenarioRecord = deps.scenarioService
+          ? await deps.scenarioService.getScenario(detail.run.scenarioId)
+          : null;
+        const roleIds = scenarioRecord?.scenario.cacVai ?? [];
+        const fastMode = detail.run.mode === "chay-nhanh";
+        let gatewayStreams: Awaited<ReturnType<WorkerClient["listStreams"]>> = [];
+        if (!fastMode && deps.worker) {
+          gatewayStreams = await deps.worker.listStreams().catch(() => []);
+        }
+        const gatewayBySession = new Map(gatewayStreams.map((s) => [s.sessionId, s]));
+        const actionLabels = new Map(STEP_ACTIONS.map((a) => [a.id, a.ten]));
+        const roles = roleIds.map((roleId) => {
+          const status = deps.roleStatus?.get(runId, roleId);
+          const label =
+            ROLE_DEFINITIONS.find((r) => r.id === roleId)?.label ?? roleId;
+          const state = status?.state ?? "cho";
+          const currentStep = status?.currentStepId
+            ? (scenarioRecord?.scenario.cacBuoc.find((b) => b.id === status.currentStepId) ??
+              null)
+            : null;
+          let stream: { state: string; wsUrl: string | null } | null = null;
+          if (!fastMode) {
+            const sessionId = status?.sessionId ?? null;
+            const gatewayInfo = sessionId ? gatewayBySession.get(sessionId) : undefined;
+            stream = {
+              state:
+                state === "dang-chay"
+                  ? (gatewayInfo?.state ?? "mat-tin-hieu")
+                  : state === "cho"
+                    ? "cho"
+                    : "da-dong",
+              wsUrl:
+                sessionId && deps.streamGatewayWsUrl
+                  ? `${deps.streamGatewayWsUrl.replace(/\/$/, "")}/stream/${sessionId}`
+                  : null,
+            };
+          }
+          return {
+            roleId,
+            label,
+            state,
+            stateLabel:
+              state === "cho"
+                ? "Đang chờ"
+                : state === "dang-chay"
+                  ? "Đang chạy"
+                  : state === "xong"
+                    ? "Đã xong"
+                    : "Lỗi",
+            currentStepId: status?.currentStepId ?? null,
+            currentStepLabel: currentStep
+              ? (actionLabels.get(currentStep.hanhDong) ?? currentStep.hanhDong)
+              : null,
+            sessionId: status?.sessionId ?? null,
+            stream,
+          };
+        });
+        sendJson(res, 200, { runId, mode: detail.run.mode, fastMode, roles });
+        return;
+      }
+
+      const cleanupMatch = /^\/api\/runs\/([^/]+)\/cleanup$/.exec(url.pathname);
+      if (req.method === "POST" && cleanupMatch) {
+        if (!deps.cleanupService) {
+          sendJson(res, 501, { error: "cleanup_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(cleanupMatch[1] ?? "");
+        const report = await deps.cleanupService.cleanupRun(runId);
+        sendJson(res, 200, report);
+        return;
+      }
+
+      /* ---------------- Dot chay nhanh (S3.4) ---------------- */
+
+      if (req.method === "POST" && url.pathname === "/api/batches") {
+        if (!deps.batchService) {
+          sendJson(res, 501, { error: "batch_not_configured" });
+          return;
+        }
+        const body = await readJsonBody(req);
+        const scenarioId = typeof body.scenarioId === "string" ? body.scenarioId : "";
+        if (!scenarioId) {
+          sendJson(res, 400, { error: "missing_scenario_id" });
+          return;
+        }
+        const targetUrl =
+          typeof body.targetUrl === "string" && body.targetUrl.length > 0
+            ? body.targetUrl
+            : config.targetBaseUrl;
+        const evaluation = evaluateTarget(targetUrl, config.allowlist);
+        if (!evaluation.allowed) {
+          sendJson(res, 403, {
+            blocked: true,
+            allowed: false,
+            reason: evaluation.reason,
+            message: "Không phải UAT — đã chặn",
+          });
+          return;
+        }
+        const batch = await deps.batchService.startBatch({
+          scenarioId,
+          targetUrl,
+          count: typeof body.count === "number" ? body.count : 4,
+        });
+        sendJson(res, 201, batch);
+        return;
+      }
+
+      const batchMatch = /^\/api\/batches\/([^/]+)$/.exec(url.pathname);
+      if (req.method === "GET" && batchMatch) {
+        if (!deps.batchService) {
+          sendJson(res, 501, { error: "batch_not_configured" });
+          return;
+        }
+        const summary = await deps.batchService.summary(
+          decodeURIComponent(batchMatch[1] ?? ""),
+        );
+        if (!summary) {
+          sendJson(res, 404, { error: "batch_not_found" });
+          return;
+        }
+        sendJson(res, 200, summary);
         return;
       }
 

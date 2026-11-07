@@ -15,6 +15,8 @@ import { buildRunId, formatRunDay } from "./run-id.js";
 
 export type RunStatus = "dang-cho" | "dang-chay" | "qua" | "hong" | "dung";
 export type RunResult = "qua" | "hong" | "dung";
+/** Trang thai don du lieu cua lan chay (S2.4): null = chua don/chua chay don. */
+export type CleanupStatus = "sach" | "chua-sach";
 
 export interface RunRecord {
   runId: string;
@@ -26,6 +28,7 @@ export interface RunRecord {
   finishedAt: string | null;
   videoPath: string | null;
   reportPath: string | null;
+  cleanupStatus: CleanupStatus | null;
 }
 
 export interface RunStepRecord {
@@ -50,7 +53,9 @@ export interface RunRepository {
   insertRun(run: RunRecord): Promise<void>;
   updateRun(
     runId: string,
-    patch: Partial<Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath">>,
+    patch: Partial<
+      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+    >,
   ): Promise<void>;
   insertStep(step: RunStepRecord): Promise<void>;
   listSteps(runId: string): Promise<RunStepRecord[]>;
@@ -71,6 +76,7 @@ interface RunRow {
   finished_at: Date | null;
   video_path: string | null;
   report_path: string | null;
+  cleanup_status: CleanupStatus | null;
 }
 
 interface StepRow {
@@ -93,6 +99,7 @@ function toRunRecord(row: RunRow): RunRecord {
     finishedAt: row.finished_at ? row.finished_at.toISOString() : null,
     videoPath: row.video_path,
     reportPath: row.report_path,
+    cleanupStatus: row.cleanup_status ?? null,
   };
 }
 
@@ -155,16 +162,26 @@ export class PgRunRepository implements RunRepository {
 
   async updateRun(
     runId: string,
-    patch: Partial<Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath">>,
+    patch: Partial<
+      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+    >,
   ): Promise<void> {
     await this.pool.query(
       `UPDATE runs SET
          status = COALESCE($2, status),
          finished_at = COALESCE($3, finished_at),
          video_path = COALESCE($4, video_path),
-         report_path = COALESCE($5, report_path)
+         report_path = COALESCE($5, report_path),
+         cleanup_status = COALESCE($6, cleanup_status)
        WHERE run_id = $1`,
-      [runId, patch.status ?? null, patch.finishedAt ?? null, patch.videoPath ?? null, patch.reportPath ?? null],
+      [
+        runId,
+        patch.status ?? null,
+        patch.finishedAt ?? null,
+        patch.videoPath ?? null,
+        patch.reportPath ?? null,
+        patch.cleanupStatus ?? null,
+      ],
     );
   }
 
@@ -249,7 +266,9 @@ export class InMemoryRunRepository implements RunRepository {
 
   async updateRun(
     runId: string,
-    patch: Partial<Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath">>,
+    patch: Partial<
+      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+    >,
   ): Promise<void> {
     const current = this.runs.get(runId);
     if (!current) return;
@@ -259,6 +278,7 @@ export class InMemoryRunRepository implements RunRepository {
       ...(patch.finishedAt !== undefined ? { finishedAt: patch.finishedAt } : {}),
       ...(patch.videoPath !== undefined ? { videoPath: patch.videoPath } : {}),
       ...(patch.reportPath !== undefined ? { reportPath: patch.reportPath } : {}),
+      ...(patch.cleanupStatus !== undefined ? { cleanupStatus: patch.cleanupStatus } : {}),
     });
   }
 
@@ -317,6 +337,7 @@ export class RunService {
       finishedAt: null,
       videoPath: null,
       reportPath: null,
+      cleanupStatus: null,
     };
     await this.repo.insertRun(run);
     return run;
@@ -324,6 +345,16 @@ export class RunService {
 
   async recordStep(step: RunStepRecord): Promise<void> {
     await this.repo.insertStep(step);
+  }
+
+  /** Chuyen lan chay tu trang thai cho sang dang chay khi executor bat dau (Epic 3). */
+  async markRunning(runId: string): Promise<void> {
+    await this.repo.updateRun(runId, { status: "dang-chay" });
+  }
+
+  /** Cap nhat trang thai don du lieu sau buoc don cua lan chay (S2.4). */
+  async updateCleanupStatus(runId: string, cleanupStatus: CleanupStatus): Promise<void> {
+    await this.repo.updateRun(runId, { cleanupStatus });
   }
 
   async finishRun(

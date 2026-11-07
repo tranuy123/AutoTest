@@ -1,0 +1,1 @@
+{"compilerOptions":{"paths":{"@autotest/scenario-schema":["./src/index.ts"]}},"extends":"./tsconfig.json"}

@@ -1,0 +1,1 @@
+{"compilerOptions":{"incremental":false,"paths":{"@/*":["./*"],"@autotest/scenario-schema":["../../packages/scenario-schema/src/index.ts"]}},"exclude":["node_modules",".next"],"extends":"./tsconfig.json"}

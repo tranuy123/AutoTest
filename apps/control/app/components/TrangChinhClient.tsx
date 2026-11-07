@@ -51,6 +51,8 @@ export default function TrangChinhClient({
   const [dangChay, setDangChay] = useState(false);
   const [lanChayMoi, setLanChayMoi] = useState<CreatedRunView | null>(null);
   const [loiChay, setLoiChay] = useState<string | null>(null);
+  const [dangThucThi, setDangThucThi] = useState(false);
+  const [loiThucThi, setLoiThucThi] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const kichBanDaChon = scenarios.find((s) => s.id === selectedId) ?? null;
@@ -123,6 +125,32 @@ export default function TrangChinhClient({
       setLoiChay("Không gọi được máy chủ — kiểm tra Orchestrator đã chạy chưa");
     } finally {
       setDangChay(false);
+    }
+  }
+
+  async function thucThiVaXem(runId: string) {
+    setDangThucThi(true);
+    setLoiThucThi(null);
+    try {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/start`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      });
+      const data = (await res.json().catch(() => ({}))) as { message?: string };
+      if (res.status === 202) {
+        window.location.href = `/lan-chay/${encodeURIComponent(runId)}`;
+        return;
+      }
+      setLoiThucThi(
+        res.status === 403
+          ? (data.message ?? "Không phải UAT — đã chặn")
+          : "Chưa bắt đầu thực thi được — thử lại hoặc xem ở mục Lịch sử chạy.",
+      );
+    } catch {
+      setLoiThucThi("Không gọi được máy chủ — kiểm tra Orchestrator đã chạy chưa");
+    } finally {
+      setDangThucThi(false);
     }
   }
 
@@ -290,10 +318,25 @@ export default function TrangChinhClient({
               </p>
             )}
             {lanChayMoi.dataError && <p>Chưa sinh được dữ liệu: {lanChayMoi.dataError}</p>}
-            <p style={{ marginBottom: 0 }}>
-              Phần thực thi thao tác trên UAT thuộc Epic 3 — lần chạy đang chờ ở hàng đợi,
-              xem ở mục Lịch sử chạy.
+            <p>
+              <button
+                type="button"
+                className="nut-chinh"
+                disabled={dangThucThi}
+                onClick={() => void thucThiVaXem(lanChayMoi.runId)}
+              >
+                {dangThucThi
+                  ? "Đang bắt đầu thực thi…"
+                  : mode === "chay-nhanh"
+                    ? "Bắt đầu thực thi (chạy nhanh)"
+                    : "Bắt đầu thực thi và xem trực tiếp"}
+              </button>
             </p>
+            {loiThucThi && (
+              <p className="thong-bao loi" role="alert" style={{ marginBottom: 0 }}>
+                ✗ {loiThucThi}
+              </p>
+            )}
           </div>
         )}
       </div>
