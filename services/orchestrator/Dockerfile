@@ -6,7 +6,10 @@ RUN corepack enable
 WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @autotest/orchestrator build
+# Dau "..." sau ten goi: build ca cac goi phu thuoc trong workspace
+# (@autotest/oracle, @autotest/scenario-schema) TRUOC orchestrator.
+# Thieu buoc nay, tsc loi TS2307 vi cac goi phu thuoc chua co dist/.
+RUN pnpm --filter @autotest/orchestrator... build
 
 FROM node:22-slim AS runtime
 ENV PNPM_HOME=/pnpm
