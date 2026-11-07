@@ -19,6 +19,7 @@ import { RoleStatusStore } from "./role-status.js";
 import { RunExecutor } from "./run-executor.js";
 import { DataService, InMemoryRunDataRepository } from "./run-data-store.js";
 import { InMemoryRunRepository, RunService } from "./run-store.js";
+import type { SandboxGate } from "./sandbox-gate.js";
 import { InMemoryScenarioRepository, ScenarioService } from "./scenario-store.js";
 import type {
   WorkerClient,
@@ -81,7 +82,23 @@ export class FakeWorkerClient implements WorkerClient {
   onSessionFinished: ((result: WorkerSessionResult) => void) | null = null;
   activeSessions = 0;
   maxActiveSessions = 0;
+  /**
+   * S5.2: giu cac phien dang chay (khong bao ket qua) cho den khi
+   * releaseHolds() - dung de kiem chung hang doi va dung an toan.
+   */
+  holdSessions = false;
+  /** sessionId cac phien da bi dong qua closeSession (kiem chung AC-2). */
+  readonly closedSessionIds: string[] = [];
+  private holdGate: Promise<void> | null = null;
+  private holdRelease: (() => void) | null = null;
   private sequence = 0;
+
+  releaseHolds(): void {
+    // Tha cong giu: cac phien dang cho va phien mo sau do deu di qua
+    // (cong da giai phong giu nguyen trang thai da giai phong trong
+    // pham vi stack test nay).
+    this.holdRelease?.();
+  }
 
   constructor(
     private readonly deps: {
@@ -115,6 +132,12 @@ export class FakeWorkerClient implements WorkerClient {
     this.maxActiveSessions = Math.max(this.maxActiveSessions, this.activeSessions);
     void (async () => {
       const { req } = session;
+      if (this.holdSessions) {
+        this.holdGate ??= new Promise<void>((resolve) => {
+          this.holdRelease = resolve;
+        });
+        await this.holdGate;
+      }
       const outcomes: WorkerSessionResult["steps"] = [];
       let failed = false;
       for (const step of steps) {
@@ -249,6 +272,7 @@ export class FakeWorkerClient implements WorkerClient {
   }
 
   async closeSession(sessionId: string): Promise<void> {
+    this.closedSessionIds.push(sessionId);
     this.sessions.delete(sessionId);
   }
 
@@ -299,8 +323,11 @@ export async function makeExecutionStack(
   configOverrides: NodeJS.ProcessEnv = {},
   executorOverrides: {
     maxConcurrentSessions?: number;
+    maxConcurrentRuns?: number;
     keepVideoOnPass?: boolean;
     kiemDemService?: KiemDemService;
+    sandboxGate?: SandboxGate;
+    stopGraceMs?: number;
   } = {},
 ): Promise<ExecutionStack> {
   const config = makeFullRoleConfig(configOverrides);

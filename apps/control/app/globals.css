@@ -401,6 +401,34 @@ button:disabled {
   border: 1px dashed var(--cho);
 }
 
+/* Trang ket qua lan chay (S5.1): ket luan lon + video phat lai. */
+.ket-luan-lon {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 8px 0 10px;
+}
+
+.ket-luan-lon.qua {
+  color: var(--qua);
+}
+
+.ket-luan-lon.hong {
+  color: var(--hong);
+}
+
+.ket-luan-lon.cho {
+  color: var(--cho);
+}
+
+.video-phat-lai {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 8px;
+  display: block;
+}
+
 @media (max-width: 760px) {
   .nhom-che-do {
     grid-template-columns: 1fr;

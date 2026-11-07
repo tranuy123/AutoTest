@@ -39,6 +39,11 @@ export default function XemTrucTiepClient({
   const [ketQuaCuoi, setKetQuaCuoi] = useState<string | null>(null);
   const [loiTai, setLoiTai] = useState<string | null>(null);
   const [matTinHieu, setMatTinHieu] = useState<ReadonlySet<string>>(new Set());
+  // S5.2: vi tri hang doi lan chay + trang thai gui yeu cau dung.
+  const [hangDoi, setHangDoi] = useState<number | null>(banDau?.queuePosition ?? null);
+  const [dangGuiDung, setDangGuiDung] = useState(false);
+  const [daGuiDung, setDaGuiDung] = useState(false);
+  const [loiDung, setLoiDung] = useState<string | null>(null);
   const dungPoll = useRef(false);
 
   const taiTrangThai = useCallback(async () => {
@@ -50,19 +55,60 @@ export default function XemTrucTiepClient({
       const data = (await res.json()) as RunStreamsView;
       setStreams(data);
       setLoiTai(null);
+      // Trang thai tong cua lan chay: vi tri hang doi (S5.2 AC-1) va
+      // ket qua cuoi - ke ca khi lan chay bi dung ma cac vai chua tung
+      // mo phien (khong the suy ra tu trang thai vai).
+      const detailRes = await fetch(`/api/runs/${encodeURIComponent(runId)}`, {
+        cache: "no-store",
+      });
+      if (detailRes.ok) {
+        const detail = (await detailRes.json()) as {
+          status?: string;
+          resultLabel?: string;
+          queuePosition?: number | null;
+        };
+        setHangDoi(detail.queuePosition ?? null);
+        if (
+          detail.status === "qua" ||
+          detail.status === "hong" ||
+          detail.status === "dung"
+        ) {
+          dungPoll.current = true;
+          setKetQuaCuoi(detail.resultLabel ?? null);
+          return;
+        }
+      }
       const xongHet = data.roles.every((r) => r.state === "xong" || r.state === "loi");
       if (xongHet && data.roles.length > 0) {
         dungPoll.current = true;
-        const detailRes = await fetch(`/api/runs/${encodeURIComponent(runId)}`, {
+        const detailRes2 = await fetch(`/api/runs/${encodeURIComponent(runId)}`, {
           cache: "no-store",
         });
-        if (detailRes.ok) {
-          const detail = (await detailRes.json()) as { resultLabel?: string };
+        if (detailRes2.ok) {
+          const detail = (await detailRes2.json()) as { resultLabel?: string };
           setKetQuaCuoi(detail.resultLabel ?? null);
         }
       }
     } catch {
       setLoiTai("Chưa tải được trạng thái lần chạy — đang thử lại…");
+    }
+  }, [runId]);
+
+  // S5.2 AC-2: gui yeu cau dung an toan - orchestrator dung sau buoc
+  // hien tai, dong phien va van chay buoc don du lieu.
+  const guiDungLanChay = useCallback(async () => {
+    setDangGuiDung(true);
+    setLoiDung(null);
+    try {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/stop`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("bad");
+      setDaGuiDung(true);
+    } catch {
+      setLoiDung("Không gửi được yêu cầu dừng — thử lại sau giây lát.");
+    } finally {
+      setDangGuiDung(false);
     }
   }, [runId]);
 
@@ -84,9 +130,50 @@ export default function XemTrucTiepClient({
     );
   }
 
+  const thanhDieuKhien = !ketQuaCuoi ? (
+    <div
+      className="the"
+      style={{
+        display: "flex",
+        gap: 12,
+        alignItems: "center",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+      }}
+    >
+      <span role="status">
+        {hangDoi !== null ? (
+          <>
+            <span className="trang-thai cho">● Đang chờ phiên trống</span> — vị trí{" "}
+            <strong>{hangDoi}</strong> trong hàng đợi. Lần chạy sẽ tự bắt đầu khi có
+            phiên trống.
+          </>
+        ) : daGuiDung ? (
+          "Đã ghi yêu cầu dừng — hệ thống dừng sau bước hiện tại và vẫn dọn dữ liệu…"
+        ) : (
+          "Lần chạy đang hoạt động."
+        )}
+      </span>
+      <button
+        type="button"
+        className="nut-nguy-hiem"
+        onClick={guiDungLanChay}
+        disabled={dangGuiDung || daGuiDung}
+      >
+        {daGuiDung ? "Đang dừng lần chạy…" : "Dừng lần chạy này"}
+      </button>
+      {loiDung && (
+        <span className="thong-bao loi" role="alert">
+          {loiDung}
+        </span>
+      )}
+    </div>
+  ) : null;
+
   if (streams.fastMode) {
     return (
       <>
+        {thanhDieuKhien}
         <div className="the lop-phu-chay-nhanh">
           <h2 style={{ marginTop: 0 }}>Chế độ chạy nhanh — không có stream</h2>
           <p className="mo-ta" style={{ marginBottom: 0 }}>
@@ -98,7 +185,9 @@ export default function XemTrucTiepClient({
         <BangTienDoVai roles={streams.roles} />
         {ketQuaCuoi && (
           <p className="thong-bao tot" role="status">
-            ✓ Lần chạy đã kết thúc — kết quả: <strong>{ketQuaCuoi}</strong>
+            ✓ Lần chạy đã kết thúc — kết quả: <strong>{ketQuaCuoi}</strong>.{" "}
+            <a href={`/ket-qua/${encodeURIComponent(runId)}`}>Mở trang kết quả</a> để
+            xem bảng đối chiếu và tải báo cáo.
           </p>
         )}
       </>
@@ -107,6 +196,7 @@ export default function XemTrucTiepClient({
 
   return (
     <>
+      {thanhDieuKhien}
       {loiTai && (
         <p className="thong-bao loi" role="alert">
           {loiTai}
@@ -166,8 +256,9 @@ export default function XemTrucTiepClient({
       </div>
       {ketQuaCuoi && (
         <p className="thong-bao tot" role="status">
-          ✓ Lần chạy đã kết thúc — kết quả: <strong>{ketQuaCuoi}</strong>. Xem chi tiết
-          và báo cáo dọn ở mục Lịch sử chạy.
+          ✓ Lần chạy đã kết thúc — kết quả: <strong>{ketQuaCuoi}</strong>.{" "}
+          <a href={`/ket-qua/${encodeURIComponent(runId)}`}>Mở trang kết quả</a> để xem
+          video phát lại, bảng đối chiếu và báo cáo dọn.
         </p>
       )}
     </>

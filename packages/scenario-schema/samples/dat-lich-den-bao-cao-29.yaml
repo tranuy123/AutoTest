@@ -3,7 +3,7 @@
 # (theo khach hang), kem khoi kiem dem doi chieu 3 chieu UI/API/DB voi
 # ky vong cua Oracle doc lap (S4.1/S4.2). La kich ban mac dinh thu hai
 # trong thu vien san pham.
-schemaVersion: 1
+schemaVersion: 2
 id: dat-lich-den-bao-cao-29
 ten: Đặt lịch đến báo cáo doanh thu 29.1/29.2 (chuẩn vàng)
 moTa: Luồng trọn vẹn 5 vai tới báo cáo doanh thu 29.1 và 29.2; khối kiểm đếm đối chiếu tổng doanh thu ngày, doanh thu khách chính và số lượt check-in ở cả 3 nguồn UI/API/DB với kỳ vọng Oracle.

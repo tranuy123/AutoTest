@@ -17,6 +17,7 @@ Hai cột: `Khoa` | `GiaTri`, mỗi khóa một dòng:
 | ten    | Tên kịch bản hiển thị tiếng Việt                     |
 | moTa   | Mô tả ngắn (không bắt buộc)                          |
 | cacVai | Các vai tham gia, cách nhau dấu phẩy: `benh-nhan,le-tan,bac-si,thu-ngan,quan-ly` |
+| kenhNgoai | Kênh ngoài kịch bản chạm tới, cách nhau dấu phẩy: `zalo,facebook,sms` (không bắt buộc; khai báo thì hệ thống bắt buộc kiểm tra đích đang ở sandbox mới cho chạy — S5.3) |
 
 ## Sheet `Buoc` — các bước theo vai
 

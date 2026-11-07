@@ -20,7 +20,7 @@ const sampleYaml = readFileSync(
   "utf8",
 );
 
-const SMALL_YAML = `schemaVersion: 1
+const SMALL_YAML = `schemaVersion: 2
 id: kich-ban-nho
 ten: Kịch bản nhỏ để test
 cacVai: [le-tan, benh-nhan]
@@ -35,7 +35,7 @@ cacBuoc:
     choSuKien: san-sang
 `;
 
-const BAD_YAML = `schemaVersion: 1
+const BAD_YAML = `schemaVersion: 2
 id: kich-ban-loi
 ten: Kịch bản lỗi
 cacVai: [le-tan]

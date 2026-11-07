@@ -55,6 +55,13 @@ export interface AppConfig {
   testTenant: string;
   /** true = kenh ngoai dang o sandbox; false = khong phai sandbox; null = chua khai bao. */
   channelsSandbox: boolean | null;
+  /**
+   * Duong dan health cua dich kiem thu de S5.3 doc co sandbox kenh ngoai
+   * tu chinh dich (tin hieu health). Mac dinh "/api/health"; phan hoi JSON
+   * duoc doc cac khoa: sandbox / kenhNgoaiSandbox / channelsSandbox /
+   * kenhNgoai.sandbox (boolean).
+   */
+  crmHealthPath: string;
   roles: RoleAccount[];
   databaseUrl: string | null;
   crmBaoCao: CrmBaoCaoConfig;
@@ -116,6 +123,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     allowlist,
     testTenant: nonEmpty(env.TEST_TENANT) as string,
     channelsSandbox: sandboxRaw === null ? null : sandboxRaw === "true",
+    crmHealthPath: nonEmpty(env.CRM_HEALTH_PATH) ?? "/api/health",
     roles,
     databaseUrl: nonEmpty(env.DATABASE_URL),
     crmBaoCao: {

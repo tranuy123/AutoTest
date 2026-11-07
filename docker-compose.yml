@@ -48,6 +48,16 @@ services:
       ROLE_QUAN_LY_USERNAME: ${ROLE_QUAN_LY_USERNAME:-}
       ROLE_QUAN_LY_PASSWORD: ${ROLE_QUAN_LY_PASSWORD:-}
       CHANNELS_SANDBOX: ${CHANNELS_SANDBOX:-}
+      # S5.3: duong dan health de doc co sandbox kenh ngoai tu dich
+      CRM_HEALTH_PATH: ${CRM_HEALTH_PATH:-}
+      # S5.2: hang doi lan chay + dung an toan
+      MAX_PARALLEL_SESSIONS: ${MAX_PARALLEL_SESSIONS:-5}
+      MAX_CONCURRENT_RUNS: ${MAX_CONCURRENT_RUNS:-2}
+      STOP_GRACE_MS: ${STOP_GRACE_MS:-30000}
+      VIDEO_KEEP_ON_PASS: ${VIDEO_KEEP_ON_PASS:-false}
+      # S2.4: don du lieu test tren CRM (mau duong + token tuy chon)
+      CRM_CLEANUP_PATH_TEMPLATE: ${CRM_CLEANUP_PATH_TEMPLATE:-}
+      CRM_CLEANUP_TOKEN: ${CRM_CLEANUP_TOKEN:-}
       # Epic 4: nguon so lieu kiem dem (API bao cao + DB chi doc cua dich)
       CRM_API_BAO_CAO_PATH: ${CRM_API_BAO_CAO_PATH:-}
       CRM_DB_READONLY_URL: ${CRM_DB_READONLY_URL:-}

@@ -1,7 +1,8 @@
 /**
  * Bo chuyen doi Excel -> YAML (S2.1 AC-3, QD-2).
  * Mau cot da tai lieu hoa trong MAU-EXCEL.md cua goi nay:
- * - Sheet "KichBan": 2 cot Khoa | GiaTri (id, ten, moTa, cacVai cach nhau dau phay).
+ * - Sheet "KichBan": 2 cot Khoa | GiaTri (id, ten, moTa, cacVai cach nhau
+ *   dau phay, kenhNgoai cach nhau dau phay - S5.3, khong bat buoc).
  * - Sheet "Buoc": id | vai | hanhDong | choSuKien | phatSuKien | thoiGianChoGiay.
  * - Sheet "SinhDuLieu": loai | ma | ten | gia | soLuong
  *   (loai: benhNhan/lichHen chi dung soLuong; dichVu dung ma/ten/gia;
@@ -90,6 +91,12 @@ export async function convertExcelToYaml(
     cacBuoc: [],
   };
   if (metaGet("moTa")) scenarioObj.moTa = metaGet("moTa");
+  // S5.3: khoa "kenhNgoai" (vd "zalo,sms") - khai bao kenh ngoai kich ban cham toi.
+  const kenhNgoai = metaGet("kenhNgoai")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (kenhNgoai.length) scenarioObj.kenhNgoai = kenhNgoai;
   if (!metaGet("id")) {
     errors.push({ file, line: null, field: "id", cell: "KichBan!B2", message: "Thiếu 'id' trong sheet KichBan" });
   }
@@ -258,6 +265,7 @@ export async function buildExcelTemplate(): Promise<Buffer> {
   kichBan.addRow(["ten", "Đặt lịch đến báo cáo doanh thu"]);
   kichBan.addRow(["moTa", "Kịch bản mẫu: đặt lịch → xác nhận → check-in → khám → thanh toán → báo cáo"]);
   kichBan.addRow(["cacVai", "benh-nhan,le-tan,bac-si,thu-ngan,quan-ly"]);
+  kichBan.addRow(["kenhNgoai", ""]);
 
   const buoc = wb.addWorksheet("Buoc");
   buoc.addRow(["id", "vai", "hanhDong", "choSuKien", "phatSuKien", "thoiGianChoGiay"]);

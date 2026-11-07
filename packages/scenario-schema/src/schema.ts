@@ -9,13 +9,20 @@
  * - Diem dong bo theo su kien (AD-3): buoc phat su kien bang `phatSuKien`,
  *   buoc khac cho bang `choSuKien`; moi su kien duoc cho phai co buoc phat.
  * - Tang schemaVersion khi doi cau truc (Dev Notes S2.1).
+ * - Version 2 (S5.3): them khai bao `kenhNgoai` - kich ban nao cham kenh
+ *   gui tin ngoai (Zalo/Facebook/SMS) phai khai bao o cap kich ban de
+ *   orchestrator kiem tra co sandbox truoc khi chay (fail-closed).
  */
 import { z } from "zod";
 
 import { isKnownAction } from "./actions.js";
 import { ROLE_IDS, type RoleId } from "./roles.js";
 
-export const SCENARIO_SCHEMA_VERSION = 1;
+export const SCENARIO_SCHEMA_VERSION = 2;
+
+/** Kenh gui tin ngoai ma kich ban co the cham toi (S5.3, NFR-4). */
+export const EXTERNAL_CHANNELS = ["zalo", "facebook", "sms"] as const;
+export type ExternalChannel = (typeof EXTERNAL_CHANNELS)[number];
 
 const roleSchema = z.enum(ROLE_IDS as unknown as [RoleId, ...RoleId[]]);
 
@@ -97,6 +104,12 @@ export const scenarioSchema = z
     id: slugSchema,
     ten: z.string().min(1),
     moTa: z.string().optional(),
+    /**
+     * Kenh ngoai ma kich ban cham toi (S5.3): khai bao thi orchestrator
+     * bat buoc xac nhan dich dang o sandbox moi cho chay; khong khai bao
+     * = kich ban khong gui tin ngoai, khong bi kiem tra nay chan.
+     */
+    kenhNgoai: z.array(z.enum(EXTERNAL_CHANNELS)).max(EXTERNAL_CHANNELS.length).optional(),
     cacVai: z.array(roleSchema).min(1),
     sinhDuLieu: dataGenSchema.optional(),
     cacBuoc: z.array(stepSchema).min(1),
@@ -104,6 +117,19 @@ export const scenarioSchema = z
   })
   .strict()
   .superRefine((scenario, ctx) => {
+    // Kenh ngoai khong duoc trung (S5.3).
+    const seenChannels = new Set<string>();
+    (scenario.kenhNgoai ?? []).forEach((kenh, index) => {
+      if (seenChannels.has(kenh)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["kenhNgoai", index],
+          message: `Kênh ngoài '${kenh}' bị trùng trong kenhNgoai`,
+        });
+      }
+      seenChannels.add(kenh);
+    });
+
     // Vai khong duoc trung.
     const seenRoles = new Set<string>();
     scenario.cacVai.forEach((vai, index) => {
@@ -181,3 +207,10 @@ export type DataGenBlock = z.infer<typeof dataGenSchema>;
 export type ScenarioStepDef = z.infer<typeof stepSchema>;
 export type ScenarioMetric = z.infer<typeof metricSchema>;
 export type ScenarioDefinition = z.infer<typeof scenarioSchema>;
+
+/** Kich ban co khai bao cham kenh ngoai khong (S5.3 AC-1/AC-2). */
+export function scenarioTouchesExternalChannels(
+  scenario: Pick<ScenarioDefinition, "kenhNgoai">,
+): boolean {
+  return (scenario.kenhNgoai?.length ?? 0) > 0;
+}

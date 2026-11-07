@@ -82,6 +82,9 @@ export interface RunStreamsView {
   mode: string;
   fastMode: boolean;
   roles: RoleStreamView[];
+  /** S5.2 AC-1: vi tri hang doi lan chay (null = khong xep hang). */
+  queuePosition?: number | null;
+  runStatus?: string;
 }
 
 export async function fetchRunStreams(runId: string): Promise<RunStreamsView | null> {
@@ -116,4 +119,122 @@ export async function fetchRunDetail(runId: string): Promise<RunDetailView | nul
   } catch {
     return null;
   }
+}
+
+/* ---------------- Trang ket qua lan chay (S5.1) ---------------- */
+
+export interface DoiChieuDongView {
+  id: string;
+  ten: string;
+  donVi: string;
+  kyVong: number | null;
+  ui: number | null;
+  api: number | null;
+  db: number | null;
+  ketQua: "khop" | "lech" | "khong-kiem-chung-duoc";
+  doLech: Record<string, number>;
+  ghiChu: string[];
+}
+
+export interface BangDoiChieuView {
+  runId: string;
+  ngay: string;
+  cacChiTieu: DoiChieuDongView[];
+  ketQua: "qua" | "hong";
+  soKhop: number;
+  soLech: number;
+  soKhongKiemChung: number;
+}
+
+export interface RoleVideoView {
+  roleId: string;
+  label: string;
+  available: boolean;
+  url: string | null;
+  reason: string | null;
+}
+
+export interface RunStepView {
+  stepId: string;
+  name: string;
+  roleId: string;
+  status: string;
+  error: string | null;
+}
+
+export interface CleanupLeftoverView {
+  type: string;
+  entityId: string;
+  lyDo: string;
+}
+
+export interface CleanupReportView {
+  runId: string;
+  daDon: number;
+  conSot: CleanupLeftoverView[];
+  sach: boolean;
+  duong: string;
+}
+
+export interface SandboxCheckView {
+  runId: string;
+  checkedAt: string;
+  channels: string[];
+  outcome: string;
+  allowed: boolean;
+  reason: string;
+}
+
+export interface RunResultView {
+  runId: string;
+  scenarioId: string;
+  scenarioName: string | null;
+  mode: string;
+  modeLabel: string;
+  status: string;
+  resultLabel: string;
+  startedAt: string;
+  finishedAt: string | null;
+  ketLuan: string | null;
+  steps: RunStepView[];
+  kiemDem: BangDoiChieuView | null;
+  videos: RoleVideoView[];
+  cleanup: CleanupReportView | null;
+  sandboxCheck: SandboxCheckView | null;
+  /** S5.2: thong tin dung theo yeu cau (null = lan chay khong bi dung). */
+  stop: { requestedAt: string; forcedSessions: number; note: string } | null;
+  input: {
+    seed: string;
+    data: {
+      thongKe: {
+        soBenhNhan: number;
+        soDichVu: number;
+        soLichHen: number;
+        tongGiaLichHen: number;
+      };
+    };
+  } | null;
+  reportDownloadUrl: string;
+}
+
+export async function fetchRunResult(runId: string): Promise<RunResultView | null> {
+  try {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/runs/${encodeURIComponent(runId)}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as RunResultView;
+  } catch {
+    return null;
+  }
+}
+
+/** URL phat video qua proxy cua Control (cung origin voi trang). */
+export function videoProxyUrl(runId: string, roleId: string): string {
+  return `/api/runs/${encodeURIComponent(runId)}/videos/${encodeURIComponent(roleId)}`;
+}
+
+/** URL tai bao cao .md qua proxy cua Control. */
+export function reportProxyUrl(runId: string): string {
+  return `/api/runs/${encodeURIComponent(runId)}/report.md`;
 }

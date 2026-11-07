@@ -39,7 +39,7 @@ const khachChinh = generated.benhNhan[0];
 if (!khachChinh) throw new Error("thieu benh nhan sinh");
 
 const scenario: ScenarioDefinition = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   id: "kich-ban-test-kiem-dem",
   ten: "Kịch bản test kiểm đếm",
   cacVai: ["benh-nhan", "le-tan", "bac-si", "thu-ngan", "quan-ly"],
@@ -203,6 +203,7 @@ async function chayKiemDem() {
       videoPath: null,
       reportPath: null,
       cleanupStatus: null,
+      resultDetail: null,
     },
     scenario,
     generated,
@@ -277,7 +278,7 @@ describe("Reconciler qua KiemDemService (S4.2)", () => {
       run: {
         runId: RUN_ID, scenarioId: scenario.id, mode: "chay-nhanh", targetUrl: apiBase,
         status: "dang-chay", startedAt: new Date().toISOString(), finishedAt: null,
-        videoPath: null, reportPath: null, cleanupStatus: null,
+        videoPath: null, reportPath: null, cleanupStatus: null, resultDetail: null,
       },
       scenario, generated, sessionResults: sessionResults(),
     });
@@ -335,7 +336,7 @@ describe("Reconciler qua KiemDemService (S4.2)", () => {
       run: {
         runId: RUN_ID, scenarioId: scenario.id, mode: "chay-nhanh", targetUrl: apiBase,
         status: "dang-chay", startedAt: new Date().toISOString(), finishedAt: null,
-        videoPath: null, reportPath: null, cleanupStatus: null,
+        videoPath: null, reportPath: null, cleanupStatus: null, resultDetail: null,
       },
       scenario, generated, sessionResults: results,
     });

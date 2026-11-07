@@ -1,7 +1,7 @@
 # Kich ban mau day du (S2.1 AC-4): dat lich -> xac nhan -> check-in ->
 # kham -> thanh toan -> bao cao doanh thu. Dung lam mau goc cho thu vien
 # kich ban (S2.2 nap san) va kich ban mau nghiem thu o S4.3.
-schemaVersion: 1
+schemaVersion: 2
 id: dat-lich-den-bao-cao
 ten: Đặt lịch đến báo cáo doanh thu
 moTa: Luồng đầy đủ 5 vai — bệnh nhân đặt lịch, lễ tân xác nhận, bệnh nhân check-in, bác sĩ khám, thu ngân thanh toán, quản lý xem báo cáo doanh thu và đối chiếu số liệu.

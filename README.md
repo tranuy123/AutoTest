@@ -15,14 +15,20 @@ Hệ thống tự động kiểm thử trên môi trường **UAT** cho CRM_Loya
 
 ## Trạng thái
 
-Đã qua cổng Phase 3 → Phase 4 (ngày 2026-11-07): Brief, PRD, Architecture Spine, Epics/Stories đã có; chủ dự án đã chốt QD-1 (stack TypeScript/Next.js/Playwright/Docker Compose), QD-2 (kịch bản YAML + chuyển đổi Excel), QD-4 (MVP chỉ đích CRM_Loyalty UAT) và duyệt spike stream QD-3 trong Sprint 1 — xem `implementation-readiness.md`. Sprint 1 bắt đầu với Epic 1 + spike S3.0.
+Đã triển khai xong toàn bộ 19 story theo bản cam kết tự hành (ngày 2026-11-07): 11 story `done`, 8 story mã hoàn chỉnh còn chờ kiểm chứng trên máy thật (Docker/Chrome/PostgreSQL không có trên máy ảo phát triển). Cổng cuối chương trình: **178/178 test đạt**, typecheck + lint đạt cả 5 gói, `pnpm verify:compose` đạt.
+
+📦 **Gói bàn giao:**
+
+- **Tài liệu cài đặt + checklist nghiệm thu máy thật:** [`docs/HUONG-DAN-MAY-THAT.md`](docs/HUONG-DAN-MAY-THAT.md) — cài từ đầu, điền `.env` từng biến, chạy kịch bản mẫu đầu tiên, checklist 9 khoản chạy một lượt để đóng toàn bộ nợ kiểm chứng, xử lý sự cố, và mục đầu vào cần cấp cho vòng UAT thật.
+- **Báo cáo tự nghiệm thu toàn dự án:** [`docs/BAO-CAO-TU-NGHIEM-THU.md`](docs/BAO-CAO-TU-NGHIEM-THU.md) — từng story đạt AC nào, bằng chứng gì, còn nợ gì.
 
 ## Chạy trên máy thật
 
-Yêu cầu duy nhất: Docker + Docker Compose trên máy thật.
+Yêu cầu duy nhất: Docker + Docker Compose trên máy thật. Hướng dẫn đầy đủ ở
+[`docs/HUONG-DAN-MAY-THAT.md`](docs/HUONG-DAN-MAY-THAT.md); tóm tắt:
 
 ```bash
-cp .env.example .env
+cp .env.example .env   # điền TARGET_*, tài khoản 5 vai, tenant test
 docker compose up -d
 ```
 

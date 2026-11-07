@@ -18,6 +18,27 @@ export type RunResult = "qua" | "hong" | "dung";
 /** Trang thai don du lieu cua lan chay (S2.4): null = chua don/chua chay don. */
 export type CleanupStatus = "sach" | "chua-sach";
 
+/**
+ * Chi tiet ket qua cua lan chay (S5.1): bang kiem dem (S4.2), ket qua
+ * tung vai va ban ghi sandbox (S5.3) duoc luu kem ho so lan chay de
+ * trang ket qua/bao cao doc truc tiep tu kho - khong phu thuoc file
+ * ket-qua.json (file chi la ban artifact bo sung, ghi tot nhat).
+ * Kieu giu dang JSON thuan de kho khong phu thuoc nguoc vao cac module
+ * nghiep vu; run-report.ts ep kieu ve BangDoiChieu/WorkerSessionResult.
+ */
+export interface RunResultDetailData {
+  kiemDem: unknown | null;
+  roles: unknown[];
+  sandboxCheck: unknown | null;
+  /** S5.2: thong tin dung theo yeu cau (neu lan chay bi dung giua chung). */
+  stop?: {
+    requestedAt: string;
+    /** So phien bi dong sau khi qua thoi gian an han cau hinh duoc. */
+    forcedSessions: number;
+    note: string;
+  } | null;
+}
+
 export interface RunRecord {
   runId: string;
   scenarioId: string;
@@ -29,6 +50,7 @@ export interface RunRecord {
   videoPath: string | null;
   reportPath: string | null;
   cleanupStatus: CleanupStatus | null;
+  resultDetail: RunResultDetailData | null;
 }
 
 export interface RunStepRecord {
@@ -54,7 +76,10 @@ export interface RunRepository {
   updateRun(
     runId: string,
     patch: Partial<
-      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+      Pick<
+        RunRecord,
+        "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus" | "resultDetail"
+      >
     >,
   ): Promise<void>;
   insertStep(step: RunStepRecord): Promise<void>;
@@ -77,6 +102,7 @@ interface RunRow {
   video_path: string | null;
   report_path: string | null;
   cleanup_status: CleanupStatus | null;
+  result_detail: RunResultDetailData | null;
 }
 
 interface StepRow {
@@ -100,6 +126,7 @@ function toRunRecord(row: RunRow): RunRecord {
     videoPath: row.video_path,
     reportPath: row.report_path,
     cleanupStatus: row.cleanup_status ?? null,
+    resultDetail: row.result_detail ?? null,
   };
 }
 
@@ -154,16 +181,27 @@ export class PgRunRepository implements RunRepository {
 
   async insertRun(run: RunRecord): Promise<void> {
     await this.pool.query(
-      `INSERT INTO runs (run_id, scenario_id, mode, target_url, status, started_at)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [run.runId, run.scenarioId, run.mode, run.targetUrl, run.status, run.startedAt],
+      `INSERT INTO runs (run_id, scenario_id, mode, target_url, status, started_at, result_detail)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        run.runId,
+        run.scenarioId,
+        run.mode,
+        run.targetUrl,
+        run.status,
+        run.startedAt,
+        run.resultDetail ? JSON.stringify(run.resultDetail) : null,
+      ],
     );
   }
 
   async updateRun(
     runId: string,
     patch: Partial<
-      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+      Pick<
+        RunRecord,
+        "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus" | "resultDetail"
+      >
     >,
   ): Promise<void> {
     await this.pool.query(
@@ -172,7 +210,8 @@ export class PgRunRepository implements RunRepository {
          finished_at = COALESCE($3, finished_at),
          video_path = COALESCE($4, video_path),
          report_path = COALESCE($5, report_path),
-         cleanup_status = COALESCE($6, cleanup_status)
+         cleanup_status = COALESCE($6, cleanup_status),
+         result_detail = COALESCE($7::jsonb, result_detail)
        WHERE run_id = $1`,
       [
         runId,
@@ -181,6 +220,7 @@ export class PgRunRepository implements RunRepository {
         patch.videoPath ?? null,
         patch.reportPath ?? null,
         patch.cleanupStatus ?? null,
+        patch.resultDetail ? JSON.stringify(patch.resultDetail) : null,
       ],
     );
   }
@@ -267,7 +307,10 @@ export class InMemoryRunRepository implements RunRepository {
   async updateRun(
     runId: string,
     patch: Partial<
-      Pick<RunRecord, "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus">
+      Pick<
+        RunRecord,
+        "status" | "finishedAt" | "videoPath" | "reportPath" | "cleanupStatus" | "resultDetail"
+      >
     >,
   ): Promise<void> {
     const current = this.runs.get(runId);
@@ -279,6 +322,7 @@ export class InMemoryRunRepository implements RunRepository {
       ...(patch.videoPath !== undefined ? { videoPath: patch.videoPath } : {}),
       ...(patch.reportPath !== undefined ? { reportPath: patch.reportPath } : {}),
       ...(patch.cleanupStatus !== undefined ? { cleanupStatus: patch.cleanupStatus } : {}),
+      ...(patch.resultDetail !== undefined ? { resultDetail: patch.resultDetail } : {}),
     });
   }
 
@@ -338,6 +382,7 @@ export class RunService {
       videoPath: null,
       reportPath: null,
       cleanupStatus: null,
+      resultDetail: null,
     };
     await this.repo.insertRun(run);
     return run;
@@ -355,6 +400,11 @@ export class RunService {
   /** Cap nhat trang thai don du lieu sau buoc don cua lan chay (S2.4). */
   async updateCleanupStatus(runId: string, cleanupStatus: CleanupStatus): Promise<void> {
     await this.repo.updateRun(runId, { cleanupStatus });
+  }
+
+  /** Luu chi tiet ket qua (bang kiem dem + ket qua tung vai + sandbox) cho trang ket qua (S5.1). */
+  async saveResultDetail(runId: string, resultDetail: RunResultDetailData): Promise<void> {
+    await this.repo.updateRun(runId, { resultDetail });
   }
 
   async finishRun(
@@ -388,7 +438,7 @@ export const RUN_RESULT_LABELS: Record<RunStatus, string> = {
   "dang-chay": "Đang chạy",
   qua: "Qua",
   hong: "Hỏng",
-  dung: "Đã dừng",
+  dung: "Đã dừng theo yêu cầu",
 };
 
 export const RUN_MODE_LABELS: Record<string, string> = {

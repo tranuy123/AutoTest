@@ -32,6 +32,7 @@ import {
   PgRunDataRepository,
 } from "./run-data-store.js";
 import { InMemoryRunRepository, PgRunRepository, RunService } from "./run-store.js";
+import { SandboxGate } from "./sandbox-gate.js";
 import {
   InMemoryScenarioRepository,
   PgScenarioRepository,
@@ -145,6 +146,13 @@ const worker = new HttpWorkerClient(runnerUrl);
 // Khoi kiem dem Epic 4: nguon DB chua cau hinh thi chi tieu co nguon db
 // se "khong kiem chung duoc" (S4.2 AC-4) thay vi im lang bo qua.
 const kiemDemService = taoKiemDemService(config);
+// Cong sandbox kenh ngoai (S5.3): chi kich ban khai bao kenhNgoai moi bi
+// kiem tra; fail-closed khi khong xac nhan duoc sandbox.
+const sandboxGate = new SandboxGate({
+  channelsSandboxConfig: config.channelsSandbox,
+  healthPath: config.crmHealthPath,
+});
+const artifactsRoot = resolve(process.env.AUTOTEST_DATA_DIR ?? "runs-data");
 const executor = new RunExecutor({
   config,
   runService,
@@ -155,11 +163,18 @@ const executor = new RunExecutor({
   roleStatus,
   cleanupService,
   kiemDemService,
-  artifactsRoot: resolve(process.env.AUTOTEST_DATA_DIR ?? "runs-data"),
+  sandboxGate,
+  artifactsRoot,
   callbackBaseUrl:
     process.env.ORCHESTRATOR_CALLBACK_URL ?? `http://localhost:${config.port}`,
   ...(process.env.MAX_PARALLEL_SESSIONS
     ? { maxConcurrentSessions: Number(process.env.MAX_PARALLEL_SESSIONS) }
+    : {}),
+  ...(process.env.MAX_CONCURRENT_RUNS
+    ? { maxConcurrentRuns: Number(process.env.MAX_CONCURRENT_RUNS) }
+    : {}),
+  ...(process.env.STOP_GRACE_MS
+    ? { stopGraceMs: Number(process.env.STOP_GRACE_MS) }
     : {}),
   ...(process.env.VIEW_PACE_MS ? { viewPaceMs: Number(process.env.VIEW_PACE_MS) } : {}),
   keepVideoOnPass: process.env.VIDEO_KEEP_ON_PASS === "true",
@@ -186,6 +201,9 @@ const server = createOrchestratorServer({
   cleanupService,
   batchService,
   worker,
+  sandboxGate,
+  artifactsRoot,
+  keepVideoOnPass: process.env.VIDEO_KEEP_ON_PASS === "true",
   streamGatewayWsUrl: process.env.STREAM_GATEWAY_WS_URL ?? "ws://localhost:3102",
 });
 server.listen(config.port, () => {

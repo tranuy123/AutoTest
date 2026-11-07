@@ -8,6 +8,8 @@
  *                          duoc noi o S1.3.
  * Theo AD-1, orchestrator khong thao tac trinh duyet truc tiep.
  */
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 
 import { STEP_ACTIONS } from "@autotest/scenario-schema";
@@ -35,6 +37,15 @@ import {
   type RunService,
   type RunStatus,
 } from "./run-store.js";
+import {
+  assembleRunResultDetail,
+  buildMarkdownReport,
+  buildRoleVideos,
+  docBaoCaoLanChay,
+  timFileVideo,
+  type RunResultDeps,
+} from "./run-report.js";
+import type { SandboxGate } from "./sandbox-gate.js";
 import {
   ScenarioExistsError,
   toScenarioSummary,
@@ -99,6 +110,12 @@ export interface OrchestratorDeps {
   worker?: WorkerClient;
   /** Base URL WebSocket cua Stream Gateway (vd ws://localhost:3102). */
   streamGatewayWsUrl?: string;
+  /** Cong sandbox kenh ngoai (S5.3) - chi tiet lan chay tra kem ban ghi kiem tra. */
+  sandboxGate?: SandboxGate;
+  /** Thu muc artifact lan chay (S5.1: doc ket-qua.json + phuc vu video theo vai). */
+  artifactsRoot?: string;
+  /** Chinh sach video (S3.4) - dung de giai thich ly do khong co video o trang ket qua. */
+  keepVideoOnPass?: boolean;
 }
 
 const RUN_STATUSES: RunStatus[] = ["dang-cho", "dang-chay", "qua", "hong", "dung"];
@@ -115,6 +132,20 @@ function toRunView(run: RunRecord) {
 
 export function createOrchestratorServer(deps: OrchestratorDeps): Server {
   const { config } = deps;
+
+  // Bo phu tro lap rap chi tiet ket qua lan chay (S5.1) - dung chung cho
+  // trang ket qua, file bao cao .md va phuc vu video theo vai.
+  const resultDeps: RunResultDeps = {
+    getRunWithSteps: async (runId) =>
+      deps.runService ? deps.runService.getRunWithSteps(runId) : null,
+    getScenario: async (scenarioId) =>
+      deps.scenarioService ? deps.scenarioService.getScenario(scenarioId) : null,
+    getRunInput: async (runId) =>
+      deps.dataService ? deps.dataService.getRunInput(runId) : null,
+    getCleanupReport: (runId) => deps.cleanupService?.getReport(runId) ?? null,
+    getSandboxRecord: (runId) => deps.sandboxGate?.getRecord(runId) ?? null,
+    artifactsRoot: deps.artifactsRoot ?? "runs-data",
+  };
   return createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     try {
@@ -230,13 +261,106 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           sendJson(res, 404, { error: "run_not_found" });
           return;
         }
+        const resultDetail = await assembleRunResultDetail(
+          resultDeps,
+          detail.run.runId,
+        ).catch(() => null);
         sendJson(res, 200, {
           ...toRunView(detail.run),
           steps: detail.steps,
           // S3.3/S2.4: trang thai phien theo vai va bao cao don (neu da co).
           roles: deps.roleStatus?.listByRun(detail.run.runId) ?? [],
           cleanup: deps.cleanupService?.getReport(detail.run.runId) ?? null,
+          // S5.3 AC-3: ban ghi kiem tra sandbox kenh ngoai cua lan chay.
+          sandboxCheck: deps.sandboxGate?.getRecord(detail.run.runId) ?? null,
+          // S5.1: ket luan lon, bang doi chieu, video theo vai, du lieu
+          // dau vao da che - nguon cho trang ket qua tren Control App.
+          ketLuan: resultDetail?.ketLuan ?? null,
+          scenarioName: resultDetail?.scenarioName ?? null,
+          kiemDem: resultDetail?.kiemDem ?? null,
+          videos: resultDetail?.videos ?? [],
+          input: resultDetail?.input ?? null,
+          // S5.2: vi tri hang doi (AC-1) va thong tin dung (AC-2).
+          queuePosition: deps.executor?.queuePosition(detail.run.runId) ?? null,
+          stop: resultDetail?.stop ?? null,
+          reportDownloadUrl: `/api/runs/${encodeURIComponent(detail.run.runId)}/report.md`,
         });
+        return;
+      }
+
+      /* ---------------- Trang ket qua + bao cao + video (S5.1) ---------------- */
+
+      const reportMatch = /^\/api\/runs\/([^/]+)\/report\.md$/.exec(url.pathname);
+      if (req.method === "GET" && reportMatch) {
+        if (!deps.runService) {
+          sendJson(res, 501, { error: "run_store_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(reportMatch[1] ?? "");
+        const resultDetail = await assembleRunResultDetail(resultDeps, runId).catch(
+          () => null,
+        );
+        if (!resultDetail) {
+          sendJson(res, 404, { error: "run_not_found" });
+          return;
+        }
+        const markdown = buildMarkdownReport(resultDetail);
+        res.writeHead(200, {
+          "content-type": "text/markdown; charset=utf-8",
+          "content-disposition": `attachment; filename="bao-cao-${runId}.md"`,
+          "content-length": Buffer.byteLength(markdown),
+        });
+        res.end(markdown);
+        return;
+      }
+
+      const videoMatch = /^\/api\/runs\/([^/]+)\/videos\/([^/]+)$/.exec(url.pathname);
+      if (req.method === "GET" && videoMatch) {
+        if (!deps.runService) {
+          sendJson(res, 501, { error: "run_store_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(videoMatch[1] ?? "");
+        const roleId = decodeURIComponent(videoMatch[2] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, { error: "run_not_found" });
+          return;
+        }
+        const reportFile = await docBaoCaoLanChay(detail.run);
+        const videoPath = timFileVideo({
+          run: detail.run,
+          roleId,
+          reportRoles: reportFile?.roles ?? [],
+          artifactsRoot: resultDeps.artifactsRoot,
+        });
+        if (!videoPath) {
+          const scenario = deps.scenarioService
+            ? await deps.scenarioService.getScenario(detail.run.scenarioId)
+            : null;
+          const videos = buildRoleVideos({
+            run: detail.run,
+            roleIds: scenario?.scenario.cacVai ?? [roleId],
+            reportRoles: reportFile?.roles ?? [],
+            artifactsRoot: resultDeps.artifactsRoot,
+          });
+          const info = videos.find((v) => v.roleId === roleId);
+          sendJson(res, 404, {
+            error: "video_not_found",
+            reason: info?.reason ?? "Không có video của vai này",
+          });
+          return;
+        }
+        const fileStat = await stat(videoPath).catch(() => null);
+        if (!fileStat) {
+          sendJson(res, 404, { error: "video_not_found", reason: "File video đã bị xoá" });
+          return;
+        }
+        res.writeHead(200, {
+          "content-type": videoPath.endsWith(".mp4") ? "video/mp4" : "video/webm",
+          "content-length": fileStat.size,
+        });
+        createReadStream(videoPath).pipe(res);
         return;
       }
 
@@ -478,6 +602,47 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
         return;
       }
 
+      /* ---------------- Dung an toan + hang doi (S5.2) ---------------- */
+
+      const stopMatch = /^\/api\/runs\/([^/]+)\/stop$/.exec(url.pathname);
+      if (req.method === "POST" && stopMatch) {
+        if (!deps.executor || !deps.runService) {
+          sendJson(res, 501, { error: "executor_not_configured" });
+          return;
+        }
+        const runId = decodeURIComponent(stopMatch[1] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, { error: "run_not_found" });
+          return;
+        }
+        const outcome = deps.executor.requestStop(runId);
+        if (!outcome.accepted) {
+          sendJson(res, 409, {
+            error: "run_not_active",
+            message: "Lần chạy không còn đang chạy hoặc đang chờ — không dừng được",
+          });
+          return;
+        }
+        sendJson(res, 202, {
+          accepted: true,
+          runId,
+          state: outcome.state,
+          message:
+            outcome.state === "dang-cho"
+              ? "Đã huỷ lần chạy khỏi hàng đợi — sẽ chốt là Đã dừng theo yêu cầu"
+              : "Đã ghi yêu cầu dừng — hệ thống dừng sau bước hiện tại và vẫn dọn dữ liệu",
+        });
+        return;
+      }
+
+      if (req.method === "GET" && url.pathname === "/api/queue") {
+        sendJson(res, 200, {
+          queue: deps.executor?.queueSnapshot() ?? null,
+        });
+        return;
+      }
+
       const eventsMatch = /^\/api\/internal\/runs\/([^/]+)\/events$/.exec(url.pathname);
       if (req.method === "POST" && eventsMatch) {
         if (!deps.bus) {
@@ -689,7 +854,16 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
             stream,
           };
         });
-        sendJson(res, 200, { runId, mode: detail.run.mode, fastMode, roles });
+        sendJson(res, 200, {
+          runId,
+          mode: detail.run.mode,
+          fastMode,
+          roles,
+          // S5.2 AC-1: vi tri hang doi lan chay (null = khong xep hang)
+          // de giao dien hien "Dang cho phien trong - vi tri N".
+          queuePosition: deps.executor?.queuePosition(runId) ?? null,
+          runStatus: detail.run.status,
+        });
         return;
       }
 

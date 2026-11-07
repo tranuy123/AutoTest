@@ -18,7 +18,7 @@ epics:
   - { id: epic-2, title: Kich ban & sinh du lieu, status: in-progress }
   - { id: epic-3, title: Thuc thi nhieu vai & stream, status: in-progress }
   - { id: epic-4, title: Oracle & kiem dem bao cao, status: in-progress }
-  - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: backlog }
+  - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: in-progress }
 
 sprints:
   - id: sprint-1
@@ -50,10 +50,22 @@ sprints:
       - { id: S4.2, title: Reconciler doi chieu UI/API/DB, status: done }
       - { id: S4.3, title: Kich ban mau day du toi bao cao 29.1/29.2, status: in-progress }
   - id: sprint-4
-    status: planned
+    status: active
     goal: Dong goi MVP chay tren may that
     stories:
-      - { id: S5.1, title: Trang ket qua lan chay + video + tai bao cao, status: ready-for-dev }
-      - { id: S5.2, title: Hang doi + Dung an toan, status: ready-for-dev }
-      - { id: S5.3, title: Kiem tra co sandbox kenh ngoai, status: ready-for-dev }
-      - { id: S5.4, title: Tai lieu cai dat va chay tren may that, status: ready-for-dev }
+      - { id: S5.1, title: Trang ket qua lan chay + video + tai bao cao, status: done }
+      - { id: S5.2, title: Hang doi + Dung an toan, status: done }
+      - { id: S5.3, title: Kiem tra co sandbox kenh ngoai, status: done }
+      - { id: S5.4, title: Tai lieu cai dat va chay tren may that, status: in-progress }
+
+handover:
+  date: 2026-11-07
+  note: >
+    Dot cuoi Epic 5 hoan thanh: S5.3, S5.1, S5.2 done; S5.4 in-progress
+    (AC-1/2/3 dat, AC-4 chua - kiem chung tren moi truong sach chi thuc
+    hien duoc tren may that co Docker). Cong cuoi chuong trinh: 178/178
+    test dat, typecheck + lint 5/5 goi, verify:compose dat. Cac story
+    in-progress con lai (S2.4, S3.0, S3.1, S3.2, S3.3, S3.4, S4.3, S5.4)
+    deu la no kiem chung may that, da gom du vao Checklist Muc 6 cua
+    docs/HUONG-DAN-MAY-THAT.md; chay xong Muc 6 thi dong cac story nay
+    (S4.3 dat -> epic-4 done). Bao cao: docs/BAO-CAO-TU-NGHIEM-THU.md.

@@ -4,12 +4,13 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { scenarioTouchesExternalChannels } from "./schema.js";
 import { parseScenarioYaml } from "./validate.js";
 
 const samplePath = join(fileURLToPath(new URL(".", import.meta.url)), "../samples/dat-lich-den-bao-cao.yaml");
 const sampleYaml = readFileSync(samplePath, "utf8");
 
-const BASE = `schemaVersion: 1
+const BASE = `schemaVersion: 2
 id: kich-ban-thu
 ten: Kịch bản thử
 cacVai: [benh-nhan, le-tan]
@@ -116,7 +117,7 @@ describe("S2.1 - cac truong hop sai dien hinh (AC-4)", () => {
   });
 
   it("8. sai phien ban schema", () => {
-    const r = parseScenarioYaml(BASE.replace("schemaVersion: 1", "schemaVersion: 2"), "sai-version.yaml");
+    const r = parseScenarioYaml(BASE.replace("schemaVersion: 2", "schemaVersion: 99"), "sai-version.yaml");
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.errors.some((e) => e.field === "schemaVersion")).toBe(true);
   });
@@ -138,11 +139,52 @@ describe("S2.1 - cac truong hop sai dien hinh (AC-4)", () => {
   });
 
   it("11. loi cu phap YAML tra ve so dong", () => {
-    const r = parseScenarioYaml("schemaVersion: 1\nid: [chua-dong\n", "hong.yaml");
+    const r = parseScenarioYaml("schemaVersion: 2\nid: [chua-dong\n", "hong.yaml");
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.errors[0]?.field).toBe("(cú pháp YAML)");
       expect(typeof r.errors[0]?.line).toBe("number");
     }
+  });
+});
+
+describe("S5.3 - khai bao kenh ngoai (kenhNgoai, schema version 2)", () => {
+  it("khai bao kenhNgoai hop le: parse duoc va scenarioTouchesExternalChannels = true", () => {
+    const yaml = BASE.replace(
+      "cacVai: [benh-nhan, le-tan]",
+      "cacVai: [benh-nhan, le-tan]\nkenhNgoai: [zalo, sms]",
+    );
+    const r = parseScenarioYaml(yaml, "co-kenh-ngoai.yaml");
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.scenario.kenhNgoai).toEqual(["zalo", "sms"]);
+      expect(scenarioTouchesExternalChannels(r.scenario)).toBe(true);
+    }
+  });
+
+  it("khong khai bao kenhNgoai: scenarioTouchesExternalChannels = false (khong bi kiem tra sandbox chan)", () => {
+    const r = parseScenarioYaml(BASE, "khong-kenh-ngoai.yaml");
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(scenarioTouchesExternalChannels(r.scenario)).toBe(false);
+  });
+
+  it("kenh ngoai khong ton tai (email) bi chan validate", () => {
+    const yaml = BASE.replace(
+      "cacVai: [benh-nhan, le-tan]",
+      "cacVai: [benh-nhan, le-tan]\nkenhNgoai: [email]",
+    );
+    const r = parseScenarioYaml(yaml, "kenh-la.yaml");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.field.startsWith("kenhNgoai"))).toBe(true);
+  });
+
+  it("kenh ngoai khai trung bi chan validate", () => {
+    const yaml = BASE.replace(
+      "cacVai: [benh-nhan, le-tan]",
+      "cacVai: [benh-nhan, le-tan]\nkenhNgoai: [zalo, zalo]",
+    );
+    const r = parseScenarioYaml(yaml, "trung-kenh.yaml");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.errors.some((e) => e.message.includes("bị trùng"))).toBe(true);
   });
 });

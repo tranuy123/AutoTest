@@ -1,8 +1,10 @@
 /**
  * Man hinh Lich su chay (S1.3 - khung): bang lan chay tu API orchestrator,
- * loc theo kich ban va ket qua. Trang chi tiet lan chay (video, doi chieu)
- * thuoc Story S5.1.
+ * loc theo kich ban va ket qua. Moi dong noi sang trang ket qua cua lan
+ * chay do (S5.1: ket luan, bang doi chieu, video, tai bao cao).
  */
+import Link from "next/link";
+
 export const dynamic = "force-dynamic";
 
 interface RunView {
@@ -52,8 +54,8 @@ export default async function LichSu({
     <>
       <h1>Lịch sử chạy</h1>
       <p className="mo-ta">
-        Mỗi lần chạy có một mã run_id riêng. Lọc theo kịch bản và kết quả — chi tiết từng
-        lần chạy (video, bảng đối chiếu) sẽ có ở Story S5.1.
+        Mỗi lần chạy có một mã run_id riêng. Bấm &quot;Xem kết quả&quot; để mở trang kết
+        quả của lần chạy: kết luận, bảng đối chiếu, video từng vai và tải báo cáo.
       </p>
 
       <form className="the" method="get" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -77,7 +79,7 @@ export default async function LichSu({
             <option value="dang-chay">Đang chạy</option>
             <option value="qua">Qua</option>
             <option value="hong">Hỏng</option>
-            <option value="dung">Đã dừng</option>
+            <option value="dung">Đã dừng theo yêu cầu</option>
           </select>
         </label>
         <button type="submit" className="nut-phu">
@@ -101,6 +103,7 @@ export default async function LichSu({
                 <th>Kịch bản</th>
                 <th>Chế độ</th>
                 <th>Kết quả</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -116,6 +119,14 @@ export default async function LichSu({
                   <td>{run.modeLabel}</td>
                   <td>
                     <span className={lopTrangThai(run.status)}>{run.resultLabel}</span>
+                  </td>
+                  <td>
+                    <Link
+                      href={`/ket-qua/${encodeURIComponent(run.runId)}`}
+                      className="lien-ket-nut"
+                    >
+                      Xem kết quả
+                    </Link>
                   </td>
                 </tr>
               ))}
