@@ -28,6 +28,26 @@ export interface RoleAccount {
   configured: boolean;
 }
 
+/**
+ * Cau hinh nguon so lieu cho khoi kiem dem (S4.2) - doc tu he thong dich.
+ * dbReadonlyUrl chua thong tin dang nhap DB nen KHONG bao gio dua vao
+ * trang thai API/giao dien; thieu cau hinh thi nguon tu bao loi khi doc
+ * (chi tieu thanh "khong kiem chung duoc" - AC-4), khong chan khoi dong.
+ */
+export interface CrmBaoCaoConfig {
+  /** Duong dan API bao cao cua CRM tren dich, mac dinh "/api/bao-cao/doanh-thu". */
+  apiPath: string;
+  /** Connection string CHI DOC toi DB cua dich kiem thu (CRM_DB_READONLY_URL). */
+  dbReadonlyUrl: string | null;
+  /** Cau SQL chi doc theo loai chi tieu; null = chua cau hinh. */
+  dbSql: {
+    tongDoanhThu: string | null;
+    doanhThuKhach: string | null;
+    soCheckIn: string | null;
+    soLichHen: string | null;
+  };
+}
+
 export interface AppConfig {
   port: number;
   targetBaseUrl: string;
@@ -37,6 +57,7 @@ export interface AppConfig {
   channelsSandbox: boolean | null;
   roles: RoleAccount[];
   databaseUrl: string | null;
+  crmBaoCao: CrmBaoCaoConfig;
 }
 
 export class ConfigError extends Error {
@@ -97,6 +118,16 @@ export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     channelsSandbox: sandboxRaw === null ? null : sandboxRaw === "true",
     roles,
     databaseUrl: nonEmpty(env.DATABASE_URL),
+    crmBaoCao: {
+      apiPath: nonEmpty(env.CRM_API_BAO_CAO_PATH) ?? "/api/bao-cao/doanh-thu",
+      dbReadonlyUrl: nonEmpty(env.CRM_DB_READONLY_URL),
+      dbSql: {
+        tongDoanhThu: nonEmpty(env.CRM_DB_SQL_TONG_DOANH_THU),
+        doanhThuKhach: nonEmpty(env.CRM_DB_SQL_DOANH_THU_KHACH),
+        soCheckIn: nonEmpty(env.CRM_DB_SQL_SO_CHECK_IN),
+        soLichHen: nonEmpty(env.CRM_DB_SQL_SO_LICH_HEN),
+      },
+    },
   };
 }
 

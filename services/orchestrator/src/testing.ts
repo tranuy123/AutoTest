@@ -14,6 +14,7 @@ import { loadConfig, type AppConfig } from "./config.js";
 import { EMPTY_BANNED_LIST } from "./data-generator.js";
 import { EntityRegistry, InMemoryEntityRepository } from "./entity-registry.js";
 import { RunEventBus } from "./event-bus.js";
+import type { KiemDemService } from "./kiem-dem.js";
 import { RoleStatusStore } from "./role-status.js";
 import { RunExecutor } from "./run-executor.js";
 import { DataService, InMemoryRunDataRepository } from "./run-data-store.js";
@@ -71,6 +72,12 @@ export class FakeWorkerClient implements WorkerClient {
   failCreateForRole: string | null = null;
   /** Co ghi file video gia vao artifactsDir khong (de test chinh sach video). */
   writeVideoFiles = false;
+  /**
+   * Outputs tra ve cho buoc xem-bao-cao-doanh-thu (S4.2/S4.3): test dat
+   * san so lieu "CRM gia lap" dang van ban tho de khoi kiem dem phan
+   * tich bang bo phan tich dung chung.
+   */
+  reportOutputs: Record<string, string | number> = {};
   onSessionFinished: ((result: WorkerSessionResult) => void) | null = null;
   activeSessions = 0;
   maxActiveSessions = 0;
@@ -168,7 +175,11 @@ export class FakeWorkerClient implements WorkerClient {
             ? { appointment_id: `LH-${sessionId}` }
             : step.actionId === "thanh-toan"
               ? { invoice_id: `HD-${sessionId}` }
-              : {};
+              : step.actionId === "check-in"
+                ? { check_in: 1 }
+                : step.actionId === "xem-bao-cao-doanh-thu"
+                  ? { ...this.reportOutputs }
+                  : {};
         if (step.actionId === "dat-lich-hen") {
           await this.deps.registry.register({
             runId: req.runId,
@@ -286,7 +297,11 @@ export interface ExecutionStack {
 /** Dung toan bo stack thuc thi bang kho InMemory (khong DB, khong trinh duyet). */
 export async function makeExecutionStack(
   configOverrides: NodeJS.ProcessEnv = {},
-  executorOverrides: { maxConcurrentSessions?: number; keepVideoOnPass?: boolean } = {},
+  executorOverrides: {
+    maxConcurrentSessions?: number;
+    keepVideoOnPass?: boolean;
+    kiemDemService?: KiemDemService;
+  } = {},
 ): Promise<ExecutionStack> {
   const config = makeFullRoleConfig(configOverrides);
   const runService = new RunService(new InMemoryRunRepository());

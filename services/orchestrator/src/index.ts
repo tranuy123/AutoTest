@@ -22,6 +22,7 @@ import {
   PgEntityRepository,
 } from "./entity-registry.js";
 import { RunEventBus } from "./event-bus.js";
+import { taoKiemDemService } from "./kiem-dem.js";
 import { RoleStatusStore } from "./role-status.js";
 import { createRunLogger } from "./run-logger.js";
 import { RunExecutor } from "./run-executor.js";
@@ -75,15 +76,16 @@ const scenarioRepository = config.databaseUrl
 await scenarioRepository.init();
 const scenarioService = new ScenarioService(scenarioRepository);
 
-// Nap san kich ban mau cua goi scenario-schema khi thu vien dang rong.
+// Nap san cac kich ban mau mac dinh cua goi scenario-schema: kich ban
+// luong day du (S2.2) va kich ban chuan vang 29.1/29.2 (S4.3).
 try {
   const pkgJsonUrl = import.meta.resolve("@autotest/scenario-schema/package.json");
-  const samplePath = resolve(
-    dirname(fileURLToPath(pkgJsonUrl)),
-    "samples/dat-lich-den-bao-cao.yaml",
-  );
-  if (existsSync(samplePath)) {
-    await scenarioService.seedIfEmpty(readFileSync(samplePath, "utf8"));
+  const samplesDir = resolve(dirname(fileURLToPath(pkgJsonUrl)), "samples");
+  for (const file of ["dat-lich-den-bao-cao.yaml", "dat-lich-den-bao-cao-29.yaml"]) {
+    const samplePath = resolve(samplesDir, file);
+    if (existsSync(samplePath)) {
+      await scenarioService.seedSampleIfAbsent(readFileSync(samplePath, "utf8"), file);
+    }
   }
 } catch (error) {
   console.warn(
@@ -140,6 +142,9 @@ const cleanupService = new CleanupService({
 
 const runnerUrl = process.env.RUNNER_URL ?? "http://localhost:3102";
 const worker = new HttpWorkerClient(runnerUrl);
+// Khoi kiem dem Epic 4: nguon DB chua cau hinh thi chi tieu co nguon db
+// se "khong kiem chung duoc" (S4.2 AC-4) thay vi im lang bo qua.
+const kiemDemService = taoKiemDemService(config);
 const executor = new RunExecutor({
   config,
   runService,
@@ -149,6 +154,7 @@ const executor = new RunExecutor({
   bus,
   roleStatus,
   cleanupService,
+  kiemDemService,
   artifactsRoot: resolve(process.env.AUTOTEST_DATA_DIR ?? "runs-data"),
   callbackBaseUrl:
     process.env.ORCHESTRATOR_CALLBACK_URL ?? `http://localhost:${config.port}`,

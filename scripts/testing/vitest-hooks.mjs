@@ -12,6 +12,7 @@ const SCENARIO_SCHEMA_SRC = new URL(
   "../../packages/scenario-schema/src/index.ts",
   import.meta.url,
 ).href;
+const ORACLE_SRC = new URL("../../packages/oracle/src/index.ts", import.meta.url).href;
 
 export async function resolve(specifier, context, nextResolve) {
   if (specifier === "vitest") {
@@ -19,6 +20,9 @@ export async function resolve(specifier, context, nextResolve) {
   }
   if (specifier === "@autotest/scenario-schema") {
     return { url: SCENARIO_SCHEMA_SRC, shortCircuit: true };
+  }
+  if (specifier === "@autotest/oracle") {
+    return { url: ORACLE_SRC, shortCircuit: true };
   }
   try {
     return await nextResolve(specifier, context);

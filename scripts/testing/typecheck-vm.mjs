@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const ALL_PACKAGES = [
   "packages/scenario-schema",
+  "packages/oracle",
   "services/orchestrator",
   "workers/runner",
   "apps/control",

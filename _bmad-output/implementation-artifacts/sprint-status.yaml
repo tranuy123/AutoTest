@@ -17,7 +17,7 @@ epics:
   - { id: epic-1, title: Khung chay & an toan moi truong, status: done }
   - { id: epic-2, title: Kich ban & sinh du lieu, status: in-progress }
   - { id: epic-3, title: Thuc thi nhieu vai & stream, status: in-progress }
-  - { id: epic-4, title: Oracle & kiem dem bao cao, status: backlog }
+  - { id: epic-4, title: Oracle & kiem dem bao cao, status: in-progress }
   - { id: epic-5, title: Bao cao, video & hoan thien MVP, status: backlog }
 
 sprints:
@@ -41,14 +41,14 @@ sprints:
       - { id: S3.1, title: Worker Playwright dang nhap 1 vai, status: in-progress }
       - { id: S3.2, title: Stream 1 phien ve luoi xem, status: in-progress }
   - id: sprint-3
-    status: planned
+    status: active
     goal: Nhieu vai dong bo + kiem dem doanh thu
     stories:
       - { id: S3.3, title: Nhieu vai + diem dong bo theo su kien, status: in-progress }
       - { id: S3.4, title: Che do Chay nhanh headless + video, status: in-progress }
-      - { id: S4.1, title: Oracle doanh thu doc lap, status: ready-for-dev }
-      - { id: S4.2, title: Reconciler doi chieu UI/API/DB, status: ready-for-dev }
-      - { id: S4.3, title: Kich ban mau day du toi bao cao 29.1/29.2, status: ready-for-dev }
+      - { id: S4.1, title: Oracle doanh thu doc lap, status: done }
+      - { id: S4.2, title: Reconciler doi chieu UI/API/DB, status: done }
+      - { id: S4.3, title: Kich ban mau day du toi bao cao 29.1/29.2, status: in-progress }
   - id: sprint-4
     status: planned
     goal: Dong goi MVP chay tren may that

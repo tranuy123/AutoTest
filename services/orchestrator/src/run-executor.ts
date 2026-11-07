@@ -18,10 +18,12 @@ import type { AppConfig } from "./config.js";
 import type { CleanupService } from "./cleanup.js";
 import type { GeneratedRunData } from "./data-generator.js";
 import type { RunEventBus } from "./event-bus.js";
+import type { KiemDemService } from "./kiem-dem.js";
 import { logEvent } from "./log.js";
+import type { BangDoiChieu } from "./reconciler.js";
 import type { RoleStatusStore } from "./role-status.js";
 import type { DataService } from "./run-data-store.js";
-import type { RunService } from "./run-store.js";
+import type { RunResult, RunService } from "./run-store.js";
 import type { ScenarioService } from "./scenario-store.js";
 import { evaluateTarget } from "./target-guard.js";
 import type {
@@ -139,6 +141,12 @@ export interface RunExecutorDeps {
   /** S3.4 AC-3: true = luu video ca lan chay qua; mac dinh false. */
   keepVideoOnPass?: boolean;
   sessionTimeoutMs?: number;
+  /**
+   * S4.2: dich vu kiem dem doi chieu 3 chieu. Co kich ban khai bao
+   * kiemDem ma khoi nay hong/khong kiem chung duoc thi lan chay hong
+   * du cac buoc thao tac deu qua (AC-2/AC-4 cua S4.2).
+   */
+  kiemDemService?: KiemDemService;
 }
 
 export class RunAlreadyActiveError extends Error {
@@ -254,7 +262,46 @@ export class RunExecutor {
       ),
     );
 
-    const overall = results.some((r) => r.status === "hong") ? "hong" : "qua";
+    let overall: RunResult = results.some((r) => r.status === "hong") ? "hong" : "qua";
+
+    // Khoi kiem dem (S4.2): doi chieu UI/API/DB voi ky vong Oracle ngay
+    // sau khi cac vai chay xong, truoc moi ket luan khac. Chi tieu lech
+    // hoac khong kiem chung duoc -> lan chay hong o khoi kiem dem du
+    // moi buoc thao tac deu qua.
+    let bangKiemDem: BangDoiChieu | null = null;
+    if ((scenario.kiemDem?.length ?? 0) > 0 && this.deps.kiemDemService) {
+      const batDauKiemDem = Date.now();
+      try {
+        bangKiemDem = await this.deps.kiemDemService.kiemDem({
+          run,
+          scenario,
+          generated,
+          sessionResults: results,
+        });
+      } catch (error) {
+        logEvent("run_reconcile_error", {
+          runId,
+          reason: error instanceof Error ? error.message : "unknown",
+        });
+      }
+      if (!bangKiemDem || bangKiemDem.ketQua === "hong") {
+        overall = "hong";
+      }
+      await runService
+        .recordStep({
+          runId,
+          stepId: "kiem-dem",
+          name: "kiem-dem-doi-chieu",
+          status: bangKiemDem?.ketQua === "qua" ? "qua" : "hong",
+          durationMs: Date.now() - batDauKiemDem,
+          errorCode: bangKiemDem
+            ? bangKiemDem.ketQua === "qua"
+              ? null
+              : `Kiểm đếm: ${bangKiemDem.soLech} chỉ tiêu lệch, ${bangKiemDem.soKhongKiemChung} không kiểm chứng được`
+            : "Khối kiểm đếm gặp lỗi khi đối chiếu",
+        })
+        .catch(() => undefined);
+    }
 
     // Chinh sach video (S3.4 AC-3): lan hong luon giu video; lan qua chi
     // giu khi cau hinh yeu cau, con lai xoa file de tiet kiem dia.
@@ -292,6 +339,7 @@ export class RunExecutor {
             result: overall,
             roles: results,
             events: this.deps.bus.history(runId),
+            kiemDem: bangKiemDem,
             cleanup: cleanupReport,
           },
           null,

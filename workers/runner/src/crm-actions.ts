@@ -12,6 +12,8 @@
  * ghi de duoc bang bien moi truong CRM_PATH_* o tang server - cau truc route
  * cua CRM_Loyalty se xac nhan lai o vong UAT that (ban giao S5.4).
  */
+import { parseSoLuong, parseSoTien } from "@autotest/oracle";
+
 import type { LocatorSpec, PageDriver } from "./page-driver.js";
 import {
   bamNut,
@@ -158,6 +160,11 @@ const L = {
     { by: "testid", id: "report-revenue-total" },
   ],
   revenueCount: [{ by: "testid", id: "so-lich-hen" }],
+  checkInCount: [{ by: "testid", id: "so-luot-check-in" }],
+  customerRevenue: [
+    { by: "testid", id: "doanh-thu-khach-hang" },
+    { by: "label", text: "Doanh thu khách hàng" },
+  ],
   addPointsButton: [
     { by: "role", role: "button", name: "Cộng điểm" },
     { by: "testid", id: "points-add" },
@@ -281,8 +288,11 @@ export const CRM_ACTIONS: Record<string, CrmAction> = {
     const outputs: Record<string, string | number> = {};
     try {
       const totalText = await docGiaTriHienThi(ctx.driver, ctx.step, L.invoiceTotal);
-      const amount = Number(totalText.replace(/[^\d]/g, ""));
-      if (Number.isFinite(amount) && amount > 0) outputs.so_tien = amount;
+      // Giu van ban tho + so da phan tich bang bo phan tich dung chung
+      // (S4.2 AC-3) - khong tu tach so tai day.
+      outputs.so_tien_text = totalText;
+      const amount = parseSoTien(totalText);
+      if (amount !== null && amount > 0) outputs.so_tien = amount;
     } catch {
       // Khong doc duoc tong tien: van tiep tuc thanh toan, Epic 4 doi chieu bang API/DB.
     }
@@ -338,16 +348,36 @@ export const CRM_ACTIONS: Record<string, CrmAction> = {
 
   "xem-bao-cao-doanh-thu": async (ctx) => {
     await moTrang(ctx.driver, ctx.step, url(ctx.baseUrl, ctx.paths.baoCaoDoanhThu));
+    // Moi so deu giu ca van ban tho (tong_doanh_thu_text...) de Reconciler
+    // tu phan tich bang bo phan tich dung chung (S4.2 AC-3); so da phan
+    // tich tai day chi la tien ich hien thi. Dinh danh phan tu la quy uoc
+    // tam - khop lai o vong dich that (ghi chu nhu S3.1).
     const outputs: Record<string, string | number> = {};
     const totalText = await docGiaTriHienThi(ctx.driver, ctx.step, L.revenueTotal);
-    const total = Number(totalText.replace(/[^\d]/g, ""));
-    if (Number.isFinite(total)) outputs.tong_doanh_thu = total;
+    outputs.tong_doanh_thu_text = totalText;
+    const total = parseSoTien(totalText);
+    if (total !== null) outputs.tong_doanh_thu = total;
     try {
       const countText = await docGiaTriHienThi(ctx.driver, ctx.step, L.revenueCount);
-      const count = Number(countText.replace(/[^\d]/g, ""));
-      if (Number.isFinite(count)) outputs.so_lich_hen = count;
+      outputs.so_lich_hen_text = countText;
+      const count = parseSoLuong(countText);
+      if (count !== null) outputs.so_lich_hen = count;
     } catch {
       // Bao cao khong hien so lich hen: chi tieu nay doi chieu bang nguon khac.
+    }
+    try {
+      const checkInText = await docGiaTriHienThi(ctx.driver, ctx.step, L.checkInCount);
+      outputs.so_luot_check_in_text = checkInText;
+      const checkIns = parseSoLuong(checkInText);
+      if (checkIns !== null) outputs.so_luot_check_in = checkIns;
+    } catch {
+      // Bao cao khong hien so luot check-in: doi chieu bang nguon khac.
+    }
+    if (s(ctx.data["doc"]) === "theo-khach") {
+      const khachText = await docGiaTriHienThi(ctx.driver, ctx.step, L.customerRevenue);
+      outputs.doanh_thu_khach_text = khachText;
+      const khach = parseSoTien(khachText);
+      if (khach !== null) outputs.doanh_thu_khach = khach;
     }
     return { outputs };
   },

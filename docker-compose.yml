@@ -48,6 +48,13 @@ services:
       ROLE_QUAN_LY_USERNAME: ${ROLE_QUAN_LY_USERNAME:-}
       ROLE_QUAN_LY_PASSWORD: ${ROLE_QUAN_LY_PASSWORD:-}
       CHANNELS_SANDBOX: ${CHANNELS_SANDBOX:-}
+      # Epic 4: nguon so lieu kiem dem (API bao cao + DB chi doc cua dich)
+      CRM_API_BAO_CAO_PATH: ${CRM_API_BAO_CAO_PATH:-}
+      CRM_DB_READONLY_URL: ${CRM_DB_READONLY_URL:-}
+      CRM_DB_SQL_TONG_DOANH_THU: ${CRM_DB_SQL_TONG_DOANH_THU:-}
+      CRM_DB_SQL_DOANH_THU_KHACH: ${CRM_DB_SQL_DOANH_THU_KHACH:-}
+      CRM_DB_SQL_SO_CHECK_IN: ${CRM_DB_SQL_SO_CHECK_IN:-}
+      CRM_DB_SQL_SO_LICH_HEN: ${CRM_DB_SQL_SO_LICH_HEN:-}
       # Epic 3: noi voi worker (runner) + thu muc artifact dung chung
       RUNNER_URL: http://runner:3102
       ORCHESTRATOR_CALLBACK_URL: http://orchestrator:3101

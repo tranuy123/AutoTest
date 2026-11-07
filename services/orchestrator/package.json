@@ -21,6 +21,7 @@
   "types": "dist/index.d.ts",
   "version": "0.1.0",
   "dependencies": {
+    "@autotest/oracle": "workspace:*",
     "@autotest/scenario-schema": "workspace:*",
     "pg": "^8.23.1"
   }

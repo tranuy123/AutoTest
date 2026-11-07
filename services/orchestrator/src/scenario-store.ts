@@ -263,4 +263,19 @@ export class ScenarioService {
       createdAt: new Date().toISOString(),
     });
   }
+
+  /** Nap mot kich ban mau mac dinh neu thu vien chua co kich ban do (S4.3). */
+  async seedSampleIfAbsent(sampleYamlText: string, filename: string): Promise<void> {
+    const parsed = parseScenarioYaml(sampleYamlText, filename);
+    if (!parsed.ok) return;
+    const existing = await this.repo.getScenario(parsed.scenario.id);
+    if (existing) return;
+    await this.repo.insertScenario({
+      id: parsed.scenario.id,
+      name: parsed.scenario.ten,
+      yaml: sampleYamlText,
+      scenario: parsed.scenario,
+      createdAt: new Date().toISOString(),
+    });
+  }
 }
