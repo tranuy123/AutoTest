@@ -3,6 +3,10 @@
  * Route:
  * - GET  /health           (S1.1) kiem tra suc khoe
  * - GET  /api/environment  (S1.2) trang thai moi truong, khong chua mat khau
+ * - GET/PUT /api/settings  (S5.5) cau hinh khai bao qua giao dien (dich UAT,
+ *                          allowlist, tenant, tai khoan theo vai) - PUT
+ *                          validate bang cong chan AD-6 truoc khi luu,
+ *                          phan hoi khong bao gio chua mat khau
  * - POST /api/runs         cong vao cua moi lan chay: buoc 1 la cong chan
  *                          allowlist (S1.2, AD-6); viec tao lan chay that
  *                          duoc noi o S1.3.
@@ -16,8 +20,9 @@ import { STEP_ACTIONS } from "@autotest/scenario-schema";
 
 import type { BatchService } from "./batch.js";
 import type { CleanupService } from "./cleanup.js";
-import { ROLE_DEFINITIONS, toEnvironmentStatus, type AppConfig } from "./config.js";
+import { ROLE_DEFINITIONS, type AppConfig } from "./config.js";
 import { BannedDataError } from "./data-generator.js";
+import { EffectiveConfigResolver } from "./effective-config.js";
 import { SyncTimeoutError, type RunEventBus } from "./event-bus.js";
 import type { EntityRegistry } from "./entity-registry.js";
 import { logEvent } from "./log.js";
@@ -51,6 +56,7 @@ import {
   toScenarioSummary,
   type ScenarioService,
 } from "./scenario-store.js";
+import type { SettingsService } from "./settings-store.js";
 import { evaluateTarget } from "./target-guard.js";
 import type { WorkerClient, WorkerSessionResult } from "./worker-client.js";
 
@@ -112,6 +118,8 @@ export interface OrchestratorDeps {
   streamGatewayWsUrl?: string;
   /** Cong sandbox kenh ngoai (S5.3) - chi tiet lan chay tra kem ban ghi kiem tra. */
   sandboxGate?: SandboxGate;
+  /** Cau hinh khai bao qua giao dien (S5.5) - doc/ghi o /api/settings. */
+  settingsService?: SettingsService;
   /** Thu muc artifact lan chay (S5.1: doc ket-qua.json + phuc vu video theo vai). */
   artifactsRoot?: string;
   /** Chinh sach video (S3.4) - dung de giai thich ly do khong co video o trang ket qua. */
@@ -132,6 +140,9 @@ function toRunView(run: RunRecord) {
 
 export function createOrchestratorServer(deps: OrchestratorDeps): Server {
   const { config } = deps;
+  // S5.5: moi diem doc cau hinh dich/allowlist di qua bo giai cau hinh
+  // hieu luc (settings ghi de env, doc truc tiep moi lan - ap dung ngay).
+  const effective = new EffectiveConfigResolver(config, deps.settingsService ?? null);
 
   // Bo phu tro lap rap chi tiet ket qua lan chay (S5.1) - dung chung cho
   // trang ket qua, file bao cao .md va phuc vu video theo vai.
@@ -155,20 +166,54 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
       }
 
       if (req.method === "GET" && url.pathname === "/api/environment") {
-        const targetEvaluation = evaluateTarget(config.targetBaseUrl, config.allowlist);
-        sendJson(res, 200, { ...toEnvironmentStatus(config), targetEvaluation });
+        const effTarget = await effective.getTarget();
+        const targetEvaluation = evaluateTarget(effTarget.baseUrl, effTarget.allowlist);
+        sendJson(res, 200, {
+          ...(await effective.getEnvironmentStatus()),
+          targetEvaluation,
+        });
+        return;
+      }
+
+      /* ---------------- Cau hinh khai bao qua giao dien (S5.5) ---------------- */
+
+      if (req.method === "GET" && url.pathname === "/api/settings") {
+        if (!deps.settingsService) {
+          sendJson(res, 501, { error: "settings_not_configured" });
+          return;
+        }
+        // View da che: chi co hasPassword, tuyet doi khong co gia tri mat khau.
+        sendJson(res, 200, await deps.settingsService.getView());
+        return;
+      }
+
+      if (req.method === "PUT" && url.pathname === "/api/settings") {
+        if (!deps.settingsService) {
+          sendJson(res, 501, { error: "settings_not_configured" });
+          return;
+        }
+        const body = await readJsonBody(req);
+        const result = await deps.settingsService.update(body);
+        if (!result.ok) {
+          sendJson(res, 400, { error: "invalid_settings", message: result.message });
+          return;
+        }
+        // Chi ghi su kien, khong ghi gia tri (dac biet la mat khau).
+        logEvent("settings_updated", {});
+        sendJson(res, 200, result.view);
         return;
       }
 
       if (req.method === "POST" && url.pathname === "/api/runs") {
         const body = await readJsonBody(req);
+        const effTarget = await effective.getTarget();
         const targetUrl =
           typeof body.targetUrl === "string" && body.targetUrl.length > 0
             ? body.targetUrl
-            : config.targetBaseUrl;
+            : effTarget.baseUrl;
 
         // Cong chan AD-6: chay truoc moi thao tac tao lan chay.
-        const evaluation = evaluateTarget(targetUrl, config.allowlist);
+        const evaluation = evaluateTarget(targetUrl, effTarget.allowlist);
         if (!evaluation.allowed) {
           logEvent("target_blocked", {
             origin: evaluation.origin,
@@ -586,8 +631,9 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           sendJson(res, 409, { error: "run_already_active" });
           return;
         }
-        // Cong chan AD-6 ap dung ca khi bat dau thuc thi.
-        const evaluation = evaluateTarget(detail.run.targetUrl, config.allowlist);
+        // Cong chan AD-6 ap dung ca khi bat dau thuc thi (allowlist hieu luc S5.5).
+        const effTarget = await effective.getTarget();
+        const evaluation = evaluateTarget(detail.run.targetUrl, effTarget.allowlist);
         if (!evaluation.allowed) {
           sendJson(res, 403, {
             blocked: true,
@@ -892,11 +938,12 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           sendJson(res, 400, { error: "missing_scenario_id" });
           return;
         }
+        const effTarget = await effective.getTarget();
         const targetUrl =
           typeof body.targetUrl === "string" && body.targetUrl.length > 0
             ? body.targetUrl
-            : config.targetBaseUrl;
-        const evaluation = evaluateTarget(targetUrl, config.allowlist);
+            : effTarget.baseUrl;
+        const evaluation = evaluateTarget(targetUrl, effTarget.allowlist);
         if (!evaluation.allowed) {
           sendJson(res, 403, {
             blocked: true,

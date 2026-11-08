@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { BatchService } from "./batch.js";
 import { CleanupService, HttpCrmCleanupClient } from "./cleanup.js";
 import { ConfigError, loadConfig } from "./config.js";
+import { EffectiveConfigResolver } from "./effective-config.js";
 import { EMPTY_BANNED_LIST, type BannedDataList } from "./data-generator.js";
 import {
   EntityRegistry,
@@ -39,6 +40,11 @@ import {
   ScenarioService,
 } from "./scenario-store.js";
 import { createOrchestratorServer } from "./server.js";
+import {
+  InMemorySettingsRepository,
+  PgSettingsRepository,
+  SettingsService,
+} from "./settings-store.js";
 import { HttpWorkerClient } from "./worker-client.js";
 
 // Tim .env o thu muc hien tai hoac goc repo (khi chay bang pnpm tu thu muc goi).
@@ -76,6 +82,16 @@ const scenarioRepository = config.databaseUrl
   : new InMemoryScenarioRepository();
 await scenarioRepository.init();
 const scenarioService = new ScenarioService(scenarioRepository);
+
+// S5.5: cau hinh khai bao qua trang Cau hinh (dich UAT, allowlist, tenant,
+// tai khoan theo vai) luu o DB noi bo (migration 007); settings ghi de
+// .env va ap dung ngay vi moi diem dung doc truc tiep qua bo giai nay.
+const settingsRepository = config.databaseUrl
+  ? new PgSettingsRepository(config.databaseUrl)
+  : new InMemorySettingsRepository();
+await settingsRepository.init();
+const settingsService = new SettingsService(settingsRepository, config);
+const effectiveConfig = new EffectiveConfigResolver(config, settingsService);
 
 // Nap san cac kich ban mau mac dinh cua goi scenario-schema: kich ban
 // luong day du (S2.2) va kich ban chuan vang 29.1/29.2 (S4.3).
@@ -164,6 +180,7 @@ const executor = new RunExecutor({
   cleanupService,
   kiemDemService,
   sandboxGate,
+  effectiveConfig,
   artifactsRoot,
   callbackBaseUrl:
     process.env.ORCHESTRATOR_CALLBACK_URL ?? `http://localhost:${config.port}`,
@@ -202,6 +219,7 @@ const server = createOrchestratorServer({
   batchService,
   worker,
   sandboxGate,
+  settingsService,
   artifactsRoot,
   keepVideoOnPass: process.env.VIDEO_KEEP_ON_PASS === "true",
   streamGatewayWsUrl: process.env.STREAM_GATEWAY_WS_URL ?? "ws://localhost:3102",

@@ -51,6 +51,33 @@ export async function fetchEnvironment(): Promise<EnvironmentView> {
   }
 }
 
+/* ---------------- Cau hinh khai bao qua giao dien (S5.5) ---------------- */
+
+export interface SettingsRoleView {
+  roleId: string;
+  username: string | null;
+  /** true = da co mat khau (tu khai bao hoac .env); gia tri mat khau khong bao gio tra ve. */
+  hasPassword: boolean;
+}
+
+export interface SettingsView {
+  targetBaseUrl: string;
+  /** Allowlist dang chuoi, cac muc cach nhau bang ", ". */
+  targetAllowlist: string;
+  testTenant: string;
+  roles: SettingsRoleView[];
+}
+
+export async function fetchSettings(): Promise<SettingsView | null> {
+  try {
+    const res = await fetch(`${ORCHESTRATOR_URL}/api/settings`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return (await res.json()) as SettingsView;
+  } catch {
+    return null;
+  }
+}
+
 /** Nhan tieng Viet cua vai (tranh import goi schema vao bundle client). */
 export const ROLE_LABELS: Record<string, string> = {
   "benh-nhan": "Bệnh nhân",
