@@ -22,6 +22,7 @@ import type { RunEventBus } from "./event-bus.js";
 import type { KiemDemService } from "./kiem-dem.js";
 import { logEvent } from "./log.js";
 import type { BangDoiChieu } from "./reconciler.js";
+import type { RunLogEntry } from "./run-logger.js";
 import type { RoleStatusStore } from "./role-status.js";
 import type { DataService } from "./run-data-store.js";
 import type {
@@ -246,6 +247,13 @@ export interface RunExecutorDeps {
    * Vang mat thi giu hanh vi cu: doc thang tu config (.env).
    */
   effectiveConfig?: EffectiveConfigResolver;
+  /**
+   * S5.6: noi nhan entry nhat ky cua lan chay (RunLogService.capture o
+   * index.ts). Moi entry di qua day deu duoc sanitize (whitelist +
+   * redact) TRUOC khi ghi vao kho nhat ky - trang Nhat ky doc tu kho
+   * do. Vang mat thi chi ghi stdout nhu cu.
+   */
+  runLog?: (entry: RunLogEntry) => void;
 }
 
 export class RunAlreadyActiveError extends Error {
@@ -283,6 +291,29 @@ export class RunExecutor {
     this.deps = deps;
     this.semaphore = new FifoSemaphore(deps.maxConcurrentSessions ?? 5);
     this.runQueue = new RunQueue(deps.maxConcurrentRuns ?? 2);
+  }
+
+  /**
+   * Ghi nhat ky lan chay (S5.6): van in stdout qua logEvent nhu cu,
+   * dong thoi dua entry vao kho nhat ky theo run (neu da noi dep
+   * runLog). Field "reason" cua logEvent duoc anh xa thanh errorMessage
+   * cua RunLogEntry; viec sanitize (whitelist + redact) xay ra o
+   * RunLogService.capture - executor khong ghi thang vao kho.
+   */
+  private log(
+    event: string,
+    fields: { runId: string } & Record<string, string | number | boolean | null>,
+  ): void {
+    logEvent(event, fields);
+    if (!this.deps.runLog) return;
+    const entry: RunLogEntry = { event, runId: fields.runId };
+    if (typeof fields.roleId === "string") entry.roleId = fields.roleId;
+    if (typeof fields.stepId === "string") entry.stepId = fields.stepId;
+    if (typeof fields.reason === "string") entry.errorMessage = fields.reason;
+    if (typeof fields.errorCode === "string") entry.errorCode = fields.errorCode;
+    if (typeof fields.result === "string") entry.result = fields.result;
+    if (typeof fields.durationMs === "number") entry.durationMs = fields.durationMs;
+    this.deps.runLog(entry);
   }
 
   /** Worker bao ket qua phien ve (POST /api/internal/sessions/:id/finished). */
@@ -331,7 +362,7 @@ export class RunExecutor {
         const waiters = this.stopWaiters.get(runId) ?? [];
         this.stopWaiters.delete(runId);
         for (const resolve of waiters) resolve(entry);
-        logEvent("run_stop_requested", { runId });
+        this.log("run_stop_requested", { runId });
       }
       return { accepted: true, state: "dang-chay" };
     }
@@ -368,7 +399,7 @@ export class RunExecutor {
       }
       await this.execute(runId);
     } catch (error) {
-      logEvent("run_execute_error", {
+      this.log("run_execute_error", {
         runId,
         reason: error instanceof Error ? error.message : "unknown",
       });
@@ -422,7 +453,7 @@ export class RunExecutor {
     await runService.finishRun(runId, "dung", {
       ...(reportPath ? { reportPath } : {}),
     });
-    logEvent("run_stopped_while_queued", { runId });
+    this.log("run_stopped_while_queued", { runId });
   }
 
   private async execute(runId: string): Promise<void> {
@@ -433,7 +464,11 @@ export class RunExecutor {
     const scenarioRecord = await scenarioService.getScenario(run.scenarioId);
     if (!scenarioRecord) {
       await runService.finishRun(runId, "hong");
-      logEvent("run_scenario_missing", { runId, scenarioId: run.scenarioId });
+      this.log("run_scenario_missing", {
+        runId,
+        scenarioId: run.scenarioId,
+        reason: `Không tìm thấy kịch bản ${run.scenarioId} trong thư viện`,
+      });
       return;
     }
     const scenario = scenarioRecord.scenario;
@@ -446,7 +481,7 @@ export class RunExecutor {
     const evaluation = evaluateTarget(run.targetUrl, allowlist);
     if (!evaluation.allowed) {
       await runService.finishRun(runId, "hong");
-      logEvent("target_blocked", { runId, origin: evaluation.origin, reason: evaluation.reason });
+      this.log("target_blocked", { runId, origin: evaluation.origin, reason: evaluation.reason });
       return;
     }
 
@@ -476,7 +511,7 @@ export class RunExecutor {
           })
           .catch(() => undefined);
         if (!sandboxRecord.allowed) {
-          logEvent("sandbox_blocked", { runId, reason: sandboxRecord.reason });
+          this.log("sandbox_blocked", { runId, reason: sandboxRecord.reason });
           await runService
             .saveResultDetail(runId, {
               kiemDem: null,
@@ -535,6 +570,28 @@ export class RunExecutor {
       ),
     );
 
+    // Nhat ky theo vai/buoc (S5.6): moi buoc cua moi vai mot entry
+    // role_step + moi vai mot entry role_finished, de trang Nhat ky loc
+    // duoc theo vai va thay ngay buoc hong kem thong diep loi cua no.
+    for (const roleResult of results) {
+      for (const step of roleResult.steps) {
+        this.log("role_step", {
+          runId,
+          roleId: roleResult.roleId,
+          stepId: step.stepId,
+          result: step.status,
+          durationMs: step.durationMs,
+          ...(step.error ? { reason: step.error } : {}),
+        });
+      }
+      this.log("role_finished", {
+        runId,
+        roleId: roleResult.roleId,
+        result: roleResult.status,
+        ...(roleResult.error ? { reason: roleResult.error } : {}),
+      });
+    }
+
     // Dung theo yeu cau (S5.2 AC-2): ket luan la "dung" du co vai chua
     // chay xong; bo qua khoi kiem dem vi so lieu cua lan chay do dang
     // khong con y nghia doi chieu. Buoc don du lieu van chay o duoi.
@@ -560,7 +617,7 @@ export class RunExecutor {
           sessionResults: results,
         });
       } catch (error) {
-        logEvent("run_reconcile_error", {
+        this.log("run_reconcile_error", {
           runId,
           reason: error instanceof Error ? error.message : "unknown",
         });
@@ -630,7 +687,7 @@ export class RunExecutor {
         forcedSessions: forced,
         note,
       };
-      logEvent("run_stopped", { runId, forcedSessions: forced });
+      this.log("run_stopped", { runId, forcedSessions: forced });
     }
 
     // Chi tiet ket qua luu vao kho lan chay (S5.1): trang ket qua doc
@@ -662,7 +719,7 @@ export class RunExecutor {
       ...(reportPath ? { reportPath } : {}),
     });
     this.deps.bus.clearRun(runId);
-    logEvent("run_finished", { runId, result: overall });
+    this.log("run_finished", { runId, result: overall });
   }
 
   /**
@@ -883,7 +940,7 @@ export class RunExecutor {
 
     await this.deps.worker.closeSession(sessionId).catch(() => undefined);
     winner.entry.forcedSessions.push(sessionId);
-    logEvent("run_stop_forced_close", { runId, sessionId, graceMs });
+    this.log("run_stop_forced_close", { runId, sessionId, graceMs });
     return { result: null };
   }
 

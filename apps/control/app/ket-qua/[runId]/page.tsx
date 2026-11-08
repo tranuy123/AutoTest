@@ -119,6 +119,18 @@ export default async function TrangKetQua({
         <a className="nut-chinh" href={reportProxyUrl(result.runId)}>
           Tải báo cáo (.md)
         </a>
+        <a
+          className="nut-phu"
+          href={`/lan-chay/${encodeURIComponent(result.runId)}/nhat-ky`}
+          style={{
+            minHeight: 52,
+            display: "inline-flex",
+            alignItems: "center",
+            textDecoration: "none",
+          }}
+        >
+          Xem nhật ký
+        </a>
         <NutChayLai scenarioId={result.scenarioId} mode={result.mode} />
       </div>
 

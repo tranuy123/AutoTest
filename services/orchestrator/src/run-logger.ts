@@ -5,8 +5,11 @@
  *    truong la (vi du ho ten benh nhan gui thua) bi loai bo hoan toan.
  * 2) Redact theo mau: moi chuoi van ban tu do (thong diep loi) deu bi che
  *    so dien thoai, email va cap khoa=gia-tri chua secret truoc khi ghi.
- * Nhat ky lan chay chi chua: event, run_id, step_id, duration_ms,
- * error_code va thong diep loi da redact.
+ * Nhat ky lan chay chi chua: event, run_id, role_id, step_id,
+ * duration_ms, error_code va thong diep loi da redact.
+ * role_id/step_id la dinh danh noi bo (khong phai du lieu ca nhan) nen
+ * nam trong danh sach trang; S5.6 luu cac ban ghi DA sanitize nay vao
+ * kho nhat ky theo lan chay (run-log-store.ts) de xem/tai qua giao dien.
  */
 
 const REDACTED = "[da-che]";
@@ -27,6 +30,7 @@ export function redactText(text: string): string {
 export interface RunLogEntry {
   event: string;
   runId?: string;
+  roleId?: string;
   stepId?: string;
   durationMs?: number;
   errorCode?: string;
@@ -38,6 +42,7 @@ export interface RunLogEntry {
 const ALLOWED_FIELDS = [
   "event",
   "runId",
+  "roleId",
   "stepId",
   "durationMs",
   "errorCode",

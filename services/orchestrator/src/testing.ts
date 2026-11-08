@@ -18,6 +18,7 @@ import { RunEventBus } from "./event-bus.js";
 import type { KiemDemService } from "./kiem-dem.js";
 import { RoleStatusStore } from "./role-status.js";
 import { RunExecutor } from "./run-executor.js";
+import { InMemoryRunLogRepository, RunLogService } from "./run-log-store.js";
 import { DataService, InMemoryRunDataRepository } from "./run-data-store.js";
 import { InMemoryRunRepository, RunService } from "./run-store.js";
 import type { SandboxGate } from "./sandbox-gate.js";
@@ -318,6 +319,8 @@ export interface ExecutionStack {
   executor: RunExecutor;
   batchService: BatchService;
   artifactsRoot: string;
+  /** S5.6: kho nhat ky theo lan chay (in-memory) da noi vao executor. */
+  runLogService: RunLogService;
 }
 
 /** Dung toan bo stack thuc thi bang kho InMemory (khong DB, khong trinh duyet). */
@@ -359,6 +362,7 @@ export async function makeExecutionStack(
   });
   const worker = new FakeWorkerClient({ bus, runService, registry });
   const artifactsRoot = await mkdtemp(join(tmpdir(), "autotest-runs-"));
+  const runLogService = new RunLogService(new InMemoryRunLogRepository());
   const executor = new RunExecutor({
     config,
     runService,
@@ -368,6 +372,9 @@ export async function makeExecutionStack(
     bus,
     roleStatus,
     cleanupService,
+    runLog: (entry) => {
+      void runLogService.capture(entry);
+    },
     artifactsRoot,
     callbackBaseUrl: "http://localhost:3101",
     sessionTimeoutMs: 30_000,
@@ -397,5 +404,6 @@ export async function makeExecutionStack(
     executor,
     batchService,
     artifactsRoot,
+    runLogService,
   };
 }

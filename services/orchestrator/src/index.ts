@@ -25,6 +25,11 @@ import {
 import { RunEventBus } from "./event-bus.js";
 import { taoKiemDemService } from "./kiem-dem.js";
 import { RoleStatusStore } from "./role-status.js";
+import {
+  InMemoryRunLogRepository,
+  PgRunLogRepository,
+  RunLogService,
+} from "./run-log-store.js";
 import { createRunLogger } from "./run-logger.js";
 import { RunExecutor } from "./run-executor.js";
 import {
@@ -92,6 +97,21 @@ const settingsRepository = config.databaseUrl
 await settingsRepository.init();
 const settingsService = new SettingsService(settingsRepository, config);
 const effectiveConfig = new EffectiveConfigResolver(config, settingsService);
+
+// S5.6: kho nhat ky theo lan chay (migration 008). RunLogger cua server
+// dung sink boc: van in stdout nhu cu + dua dong JSON (DA qua
+// sanitizeLogEntry ngay trong createRunLogger) vao kho de trang Nhat
+// ky doc/tai. Executor dua entry qua RunLogService.capture (sanitize o
+// do) - ca hai duong deu khong ghi entry tho vao kho.
+const runLogRepository = config.databaseUrl
+  ? new PgRunLogRepository(config.databaseUrl)
+  : new InMemoryRunLogRepository();
+await runLogRepository.init();
+const runLogService = new RunLogService(runLogRepository);
+const runLogger = createRunLogger((line) => {
+  console.log(line);
+  runLogService.captureSanitizedLine(line);
+});
 
 // Nap san cac kich ban mau mac dinh cua goi scenario-schema: kich ban
 // luong day du (S2.2) va kich ban chuan vang 29.1/29.2 (S4.3).
@@ -181,6 +201,9 @@ const executor = new RunExecutor({
   kiemDemService,
   sandboxGate,
   effectiveConfig,
+  runLog: (entry) => {
+    void runLogService.capture(entry);
+  },
   artifactsRoot,
   callbackBaseUrl:
     process.env.ORCHESTRATOR_CALLBACK_URL ?? `http://localhost:${config.port}`,
@@ -208,7 +231,8 @@ const batchService = new BatchService({
 const server = createOrchestratorServer({
   config,
   runService,
-  runLogger: createRunLogger(),
+  runLogger,
+  runLogService,
   scenarioService,
   dataService,
   executor,

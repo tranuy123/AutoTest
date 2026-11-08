@@ -10,6 +10,9 @@
  * - POST /api/runs         cong vao cua moi lan chay: buoc 1 la cong chan
  *                          allowlist (S1.2, AD-6); viec tao lan chay that
  *                          duoc noi o S1.3.
+ * - GET  /api/runs/:id/logs[.txt] (S5.6) nhat ky theo lan chay (JSON cho
+ *                          trang Nhat ky, .txt de tai gui ho tro) - entry
+ *                          da sanitize tu luc ghi, khong che lai o day.
  * Theo AD-1, orchestrator khong thao tac trinh duyet truc tiep.
  */
 import { createReadStream } from "node:fs";
@@ -28,6 +31,11 @@ import type { EntityRegistry } from "./entity-registry.js";
 import { logEvent } from "./log.js";
 import type { RoleStatusStore } from "./role-status.js";
 import type { RunExecutor } from "./run-executor.js";
+import {
+  buildRunLogText,
+  toRunLogApiEntry,
+  type RunLogService,
+} from "./run-log-store.js";
 import type { RunLogger } from "./run-logger.js";
 import {
   RunNotFoundError,
@@ -120,6 +128,8 @@ export interface OrchestratorDeps {
   sandboxGate?: SandboxGate;
   /** Cau hinh khai bao qua giao dien (S5.5) - doc/ghi o /api/settings. */
   settingsService?: SettingsService;
+  /** Kho nhat ky theo lan chay (S5.6) - doc o /api/runs/:id/logs[.txt]. */
+  runLogService?: RunLogService;
   /** Thu muc artifact lan chay (S5.1: doc ket-qua.json + phuc vu video theo vai). */
   artifactsRoot?: string;
   /** Chinh sach video (S3.4) - dung de giai thich ly do khong co video o trang ket qua. */
@@ -356,6 +366,71 @@ export function createOrchestratorServer(deps: OrchestratorDeps): Server {
           "content-length": Buffer.byteLength(markdown),
         });
         res.end(markdown);
+        return;
+      }
+
+      /* ---------------- Nhat ky lan chay (S5.6) ---------------- */
+
+      const logsMatch = /^\/api\/runs\/([^/]+)\/logs$/.exec(url.pathname);
+      if (req.method === "GET" && logsMatch) {
+        if (!deps.runService || !deps.runLogService) {
+          sendJson(res, 501, {
+            error: "run_log_not_configured",
+            message: "Orchestrator chưa được nối kho nhật ký lần chạy",
+          });
+          return;
+        }
+        const runId = decodeURIComponent(logsMatch[1] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, {
+            error: "run_not_found",
+            message: `Không tìm thấy lần chạy ${runId}`,
+          });
+          return;
+        }
+        // Entry trong kho da qua sanitize tu luc ghi - tra nguyen trang.
+        const { entries, truncated } = await deps.runLogService.list(runId);
+        sendJson(res, 200, {
+          runId,
+          scenarioId: detail.run.scenarioId,
+          truncated,
+          entries: entries.map(toRunLogApiEntry),
+        });
+        return;
+      }
+
+      const logsTxtMatch = /^\/api\/runs\/([^/]+)\/logs\.txt$/.exec(url.pathname);
+      if (req.method === "GET" && logsTxtMatch) {
+        if (!deps.runService || !deps.runLogService) {
+          sendJson(res, 501, {
+            error: "run_log_not_configured",
+            message: "Orchestrator chưa được nối kho nhật ký lần chạy",
+          });
+          return;
+        }
+        const runId = decodeURIComponent(logsTxtMatch[1] ?? "");
+        const detail = await deps.runService.getRunWithSteps(runId);
+        if (!detail) {
+          sendJson(res, 404, {
+            error: "run_not_found",
+            message: `Không tìm thấy lần chạy ${runId}`,
+          });
+          return;
+        }
+        const { entries, truncated } = await deps.runLogService.list(runId);
+        const text = buildRunLogText({
+          runId,
+          scenarioId: detail.run.scenarioId,
+          entries,
+          truncated,
+        });
+        res.writeHead(200, {
+          "content-type": "text/plain; charset=utf-8",
+          "content-disposition": `attachment; filename="nhat-ky-${runId}.txt"`,
+          "content-length": Buffer.byteLength(text),
+        });
+        res.end(text);
         return;
       }
 

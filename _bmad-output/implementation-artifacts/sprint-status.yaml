@@ -58,6 +58,7 @@ sprints:
       - { id: S5.3, title: Kiem tra co sandbox kenh ngoai, status: done }
       - { id: S5.4, title: Tai lieu cai dat va chay tren may that, status: in-progress }
       - { id: S5.5, title: Trang cau hinh khai bao dich UAT + tai khoan theo vai, status: done }
+      - { id: S5.6, title: Trang nhat ky lan chay (xem log + tai log gui ho tro), status: done }
 
 handover:
   date: 2026-11-07
