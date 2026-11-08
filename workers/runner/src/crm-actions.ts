@@ -238,7 +238,22 @@ export const CRM_ACTIONS: Record<string, CrmAction> = {
         ? ctx.paths.dangNhapBenhNhan
         : ctx.paths.dangNhapNhanVien;
     await moTrang(ctx.driver, ctx.step, url(ctx.baseUrl, duongDan));
-    await choPhanTu(ctx.driver, ctx.step, L.username);
+    try {
+      // Cho form toi 30 giay (thay vi mac dinh 15): trang dang nhap o lan
+      // cham dau tien thuong phai cho CRM bien dich + hydrate xong moi co
+      // form. Kem dia chi trang thuc te luc loi vao thong diep de log lan
+      // sau tu noi ro trinh duyet da dung o dau (chuyen huong? 404?).
+      await choPhanTu(
+        ctx.driver,
+        { ...ctx.step, timeoutMs: 30_000 },
+        L.username,
+      );
+    } catch (loi) {
+      throw new StepError(
+        ctx.step.stepId,
+        `${(loi instanceof Error ? loi.message : String(loi)).replace(/^Bước '[^']*': /, "")} (địa chỉ trang lúc lỗi: ${ctx.driver.currentUrl()})`,
+      );
+    }
     await dienTruong(ctx.driver, ctx.step, L.username, ctx.credentials.username);
     await dienTruong(ctx.driver, ctx.step, L.password, ctx.credentials.password);
     await bamNut(ctx.driver, ctx.step, L.loginButton);
@@ -257,7 +272,10 @@ export const CRM_ACTIONS: Record<string, CrmAction> = {
           "Tài khoản yêu cầu mã xác thực TOTP (2FA) sau khi nhập mật khẩu — AutoTest chưa có mã bí mật TOTP của vai này. Hãy tắt 2FA cho tài khoản test trên UAT, hoặc cấp mã bí mật TOTP để bổ sung khai báo.",
         );
       }
-      throw loiGoc;
+      throw new StepError(
+        ctx.step.stepId,
+        `${(loiGoc instanceof Error ? loiGoc.message : String(loiGoc)).replace(/^Bước '[^']*': /, "")} (địa chỉ trang lúc lỗi: ${ctx.driver.currentUrl()})`,
+      );
     }
     return { outputs: {} };
   },

@@ -92,16 +92,25 @@ export class PlaywrightPageDriver implements PageDriver {
   ): Promise<PlaywrightLocator> {
     const deadline = Date.now() + timeoutMs;
     let lastError: unknown = null;
-    for (const spec of candidates) {
-      const remaining = Math.max(1, deadline - Date.now());
-      const probe = Math.min(remaining, Math.max(250, Math.floor(timeoutMs / candidates.length)));
-      const locator = this.locatorOf(spec).first();
-      try {
-        await locator.waitFor({ state: "visible", timeout: probe });
-        return locator;
-      } catch (error) {
-        lastError = error;
+    // Quet lai nhieu vong cho den han chot: ban cu chi quet MOT vong, moi
+    // ung vien mot lat cat timeout/len(danh sach) - ung vien dung (o email
+    // that cua CRM) chi duoc ~2,5 giay dau, trong khi trang CRM tai cham o
+    // lan dau (bien dich + hydrate) thuong hien form muon hon nen bi bo lo.
+    // Da gap tren may that 2026-11-08 (log AUTOTEST_20261108_004).
+    for (;;) {
+      for (const spec of candidates) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) break;
+        const probe = Math.min(remaining, 500);
+        const locator = this.locatorOf(spec).first();
+        try {
+          await locator.waitFor({ state: "visible", timeout: probe });
+          return locator;
+        } catch (error) {
+          lastError = error;
+        }
       }
+      if (candidates.length === 0 || Date.now() >= deadline) break;
     }
     throw new Error(
       `Không tìm thấy phần tử nào trong ${candidates.length} định danh ứng viên` +
