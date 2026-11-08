@@ -215,7 +215,25 @@ function s(value: string | number | boolean | undefined): string {
 }
 
 function url(base: string, path: string): string {
-  return `${base.replace(/\/$/, "")}${path}`;
+  const goc = base.replace(/\/$/, "");
+  // Neu URL dich da chua san phan dau cua duong dan (vd. dich khai bao la
+  // https://crm.../quan-tri con duong dan dang nhap la /quan-tri/dang-nhap)
+  // thi khong noi trung doan do. Da gap tren may that 2026-11-08, log
+  // AUTOTEST_20261108_005: trinh duyet dung o /quan-tri/quan-tri/dang-nhap
+  // (trang khong ton tai) nen khong thay form dang nhap.
+  try {
+    const phanDau = new URL(goc).pathname.replace(/\/$/, "");
+    if (
+      phanDau &&
+      phanDau !== "/" &&
+      (path === phanDau || path.startsWith(`${phanDau}/`))
+    ) {
+      return `${goc}${path.slice(phanDau.length)}`;
+    }
+  } catch {
+    // base khong phai URL day du thi giu cach noi thang nhu cu.
+  }
+  return `${goc}${path}`;
 }
 
 /** Mo trang lich hen cua mot lich cu the neu biet id, nguoc lai mo danh sach. */
