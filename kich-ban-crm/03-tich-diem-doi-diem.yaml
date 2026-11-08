@@ -1,0 +1,115 @@
+# Loyalty: sau khi thu tien, cong diem cho khach (khoi diem thuong o ho so
+# khach hang) roi dung diem tru vao lan thu tien tiep theo (khoi doi diem
+# o phieu thu). Hai lich hen cho cung mot khach.
+schemaVersion: 2
+id: crm-tich-diem-doi-diem
+ten: "CRM — Tích điểm và đổi điểm (Loyalty)"
+moTa: Khách đặt 2 lịch; lần 1 thu tiền rồi cộng điểm, lần 2 đổi điểm trừ vào phiếu thu; quản lý xem doanh thu theo khách hàng.
+cacVai:
+  - benh-nhan
+  - le-tan
+  - thu-ngan
+  - quan-ly
+sinhDuLieu:
+  benhNhan:
+    soLuong: 1
+  dichVu:
+    - ma: DV-KHAM-TQ
+      ten: Khám tổng quát
+      gia: 300000
+    - ma: DV-TAI-KHAM
+      ten: Tái khám
+      gia: 200000
+  lichHen:
+    soLuong: 2
+cacBuoc:
+  - id: le-tan-dang-nhap
+    vai: le-tan
+    hanhDong: dang-nhap
+    phatSuKien: le-tan-san-sang
+  - id: thu-ngan-dang-nhap
+    vai: thu-ngan
+    hanhDong: dang-nhap
+  - id: quan-ly-dang-nhap
+    vai: quan-ly
+    hanhDong: dang-nhap
+  # Lan 1: dat lich -> check-in -> thu tien -> cong diem
+  - id: dat-lich-lan-1
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: le-tan-san-sang
+    phatSuKien: lich-1-da-dat
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: $dichVu[0]
+  - id: check-in-lan-1
+    vai: le-tan
+    hanhDong: check-in
+    choSuKien: lich-1-da-dat
+    phatSuKien: lich-1-check-in
+    duLieu:
+      lichHen: $lichHen[0]
+  - id: thu-tien-lan-1
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: lich-1-check-in
+    phatSuKien: lich-1-da-thu
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: cong-diem
+    vai: thu-ngan
+    hanhDong: cong-diem
+    choSuKien: lich-1-da-thu
+    phatSuKien: da-cong-diem
+    duLieu:
+      benhNhan: $benhNhan[0]
+  # Lan 2: dat lich tai kham -> check-in -> doi diem -> thu tien
+  - id: dat-lich-lan-2
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: da-cong-diem
+    phatSuKien: lich-2-da-dat
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: $dichVu[1]
+  - id: check-in-lan-2
+    vai: le-tan
+    hanhDong: check-in
+    choSuKien: lich-2-da-dat
+    phatSuKien: lich-2-check-in
+    duLieu:
+      lichHen: $lichHen[1]
+  - id: doi-diem
+    vai: thu-ngan
+    hanhDong: doi-diem
+    choSuKien: lich-2-check-in
+    phatSuKien: da-doi-diem
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: thu-tien-lan-2
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: da-doi-diem
+    phatSuKien: lich-2-da-thu
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: xem-doanh-thu-theo-khach
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: lich-2-da-thu
+    duLieu:
+      doc: theo-khach
+      benhNhan: $benhNhan[0]
+kiemDem:
+  - id: doanh-thu-khach-chinh
+    ten: Doanh thu theo khách hàng (đã trừ điểm đổi)
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: doanhThuKhachChinh
+    donVi: VND
+  - id: so-luot-check-in
+    ten: Số lượt check-in
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soCheckIn
+    donVi: lượt

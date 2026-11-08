@@ -1,0 +1,90 @@
+# Luong le tan - thu ngan cua CRM (khong co buoc kham: CRM khong lam kham,
+# phan do thuoc HIS). Benh nhan dat lich tren cong benh nhan, le tan xac
+# nhan + check-in, thu ngan lap phieu thu va in, quan ly doi chieu bao cao
+# doanh thu theo ngay.
+schemaVersion: 2
+id: crm-dat-lich-check-in-thu-tien
+ten: "CRM — Đặt lịch → check-in → thu tiền → báo cáo"
+moTa: Một khách đặt lịch, lễ tân xác nhận và check-in, thu ngân thu tiền và in phiếu, quản lý xem báo cáo doanh thu ngày; đối chiếu doanh thu, số lịch hẹn, số lượt check-in.
+cacVai:
+  - benh-nhan
+  - le-tan
+  - thu-ngan
+  - quan-ly
+sinhDuLieu:
+  benhNhan:
+    soLuong: 1
+  dichVu:
+    - ma: DV-KHAM-TQ
+      ten: Khám tổng quát
+      gia: 300000
+  lichHen:
+    soLuong: 1
+cacBuoc:
+  - id: le-tan-dang-nhap
+    vai: le-tan
+    hanhDong: dang-nhap
+    phatSuKien: le-tan-san-sang
+  - id: thu-ngan-dang-nhap
+    vai: thu-ngan
+    hanhDong: dang-nhap
+  - id: quan-ly-dang-nhap
+    vai: quan-ly
+    hanhDong: dang-nhap
+  - id: dat-lich
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: le-tan-san-sang
+    phatSuKien: lich-da-dat
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: $dichVu[0]
+  - id: xac-nhan-lich
+    vai: le-tan
+    hanhDong: xac-nhan-lich
+    choSuKien: lich-da-dat
+    phatSuKien: lich-da-xac-nhan
+    duLieu:
+      lichHen: $lichHen[0]
+  - id: check-in
+    vai: le-tan
+    hanhDong: check-in
+    choSuKien: lich-da-xac-nhan
+    phatSuKien: da-check-in
+    duLieu:
+      lichHen: $lichHen[0]
+  - id: thu-tien
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: da-check-in
+    phatSuKien: da-thanh-toan
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: in-phieu-thu
+    vai: thu-ngan
+    hanhDong: in-hoa-don
+    choSuKien: da-thanh-toan
+    phatSuKien: da-in-phieu
+  - id: xem-bao-cao-ngay
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: da-in-phieu
+kiemDem:
+  - id: doanh-thu-ngay
+    ten: Doanh thu trong ngày
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: tongGiaLichHenDaThanhToan
+    donVi: VND
+  - id: so-lich-hen
+    ten: Số lịch hẹn đã tạo
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soLichHen
+    donVi: lịch
+  - id: so-luot-check-in
+    ten: Số lượt check-in
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soCheckIn
+    donVi: lượt

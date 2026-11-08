@@ -1,0 +1,37 @@
+# Kich ban khoi dong: kiem tai khoan 4 vai nhan vien dang nhap duoc vao
+# trang quan tri va mo duoc trang chu. Chay kich ban nay DAU TIEN sau khi
+# dien .env de bat loi tai khoan/URL truoc khi chay luong dai.
+schemaVersion: 2
+id: crm-khoi-dong-dang-nhap
+ten: "CRM — Khởi động: 4 vai nhân viên đăng nhập"
+moTa: Lễ tân, bác sĩ, thu ngân, quản lý lần lượt đăng nhập trang quản trị và mở trang chủ. Không sinh dữ liệu, không ghi gì lên CRM.
+cacVai:
+  - le-tan
+  - bac-si
+  - thu-ngan
+  - quan-ly
+cacBuoc:
+  - id: le-tan-dang-nhap
+    vai: le-tan
+    hanhDong: dang-nhap
+  - id: le-tan-trang-chu
+    vai: le-tan
+    hanhDong: mo-trang-chu
+  - id: bac-si-dang-nhap
+    vai: bac-si
+    hanhDong: dang-nhap
+  - id: bac-si-trang-chu
+    vai: bac-si
+    hanhDong: mo-trang-chu
+  - id: thu-ngan-dang-nhap
+    vai: thu-ngan
+    hanhDong: dang-nhap
+  - id: thu-ngan-trang-chu
+    vai: thu-ngan
+    hanhDong: mo-trang-chu
+  - id: quan-ly-dang-nhap
+    vai: quan-ly
+    hanhDong: dang-nhap
+  - id: quan-ly-trang-chu
+    vai: quan-ly
+    hanhDong: mo-trang-chu

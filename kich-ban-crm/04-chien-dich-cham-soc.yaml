@@ -1,0 +1,26 @@
+# Chien dich cham soc: quan ly tao chien dich roi mo bao cao hieu qua
+# chien dich. Chien dich gui tin Zalo/SMS nen BAT BUOC khai bao kenhNgoai:
+# orchestrator chi cho chay khi dich xac nhan dang o sandbox (fail-closed).
+schemaVersion: 2
+id: crm-chien-dich-cham-soc
+ten: "CRM — Tạo chiến dịch chăm sóc + báo cáo hiệu quả"
+moTa: Quản lý tạo chiến dịch chăm sóc khách hàng và mở báo cáo hiệu quả chiến dịch. Chỉ chạy khi kênh Zalo/SMS của UAT ở sandbox.
+kenhNgoai:
+  - zalo
+  - sms
+cacVai:
+  - quan-ly
+cacBuoc:
+  - id: quan-ly-dang-nhap
+    vai: quan-ly
+    hanhDong: dang-nhap
+  - id: tao-chien-dich
+    vai: quan-ly
+    hanhDong: tao-chien-dich
+    duLieu:
+      tenChienDich: AUTOTEST chiến dịch chăm sóc sau khám
+  - id: mo-bao-cao-chien-dich
+    vai: quan-ly
+    hanhDong: mo-bao-cao
+    duLieu:
+      duongDan: /quan-tri/bao-cao/hieu-qua-chien-dich

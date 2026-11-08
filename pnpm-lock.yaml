@@ -23,6 +23,9 @@ importers:
       '@autotest/scenario-schema':
         specifier: workspace:*
         version: link:../../packages/scenario-schema
+      '@novnc/novnc':
+        specifier: ^1.5.0
+        version: 1.7.0
       next:
         specifier: ^16.0.0
         version: 16.4.5(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -55,6 +58,24 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/oracle:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
+      eslint:
+        specifier: ^9.39.0
+        version: 9.39.5(supports-color@7.2.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.48.0
+        version: 8.72.1(eslint@9.39.5(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.12(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(yaml@2.9.1))
+
   packages/scenario-schema:
     dependencies:
       exceljs:
@@ -85,6 +106,9 @@ importers:
 
   services/orchestrator:
     dependencies:
+      '@autotest/oracle':
+        specifier: workspace:*
+        version: link:../../packages/oracle
       '@autotest/scenario-schema':
         specifier: workspace:*
         version: link:../../packages/scenario-schema
@@ -113,6 +137,9 @@ importers:
 
   workers/runner:
     dependencies:
+      '@autotest/oracle':
+        specifier: workspace:*
+        version: link:../../packages/oracle
       playwright:
         specifier: ^1.57.0
         version: 1.65.0
@@ -442,6 +469,9 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@novnc/novnc@1.7.0':
+    resolution: {integrity: sha512-ucEJOx4T2avIRCleodk7YobZj5O2Ga2AeLfQ69A/yjG9HHba2+PDgwSkN3FttrmG+70ZGx21sElNFouK13RzyA==}
 
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
@@ -2326,6 +2356,8 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
+
+  '@novnc/novnc@1.7.0': {}
 
   '@oxc-project/types@0.156.0': {}
 

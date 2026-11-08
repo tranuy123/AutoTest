@@ -1,0 +1,115 @@
+# Tai nhe: 3 khach dat lich cung ngay, le tan check-in ca 3, thu ngan thu
+# ca 3, quan ly doi chieu tong doanh thu ngay + so lich + so check-in.
+# Kiem tra bao cao cong dung khi nhieu phieu thu trong cung ngay.
+schemaVersion: 2
+id: crm-nhieu-khach-cung-ngay
+ten: "CRM — 3 khách cùng ngày, đối chiếu tổng doanh thu"
+moTa: Ba khách đặt lịch, check-in và thanh toán trong cùng ngày; đối chiếu tổng doanh thu ngày, số lịch hẹn và số lượt check-in ở UI/API/DB.
+cacVai:
+  - benh-nhan
+  - le-tan
+  - thu-ngan
+  - quan-ly
+sinhDuLieu:
+  benhNhan:
+    soLuong: 3
+  dichVu:
+    - ma: DV-KHAM-TQ
+      ten: Khám tổng quát
+      gia: 300000
+    - ma: DV-TAI-KHAM
+      ten: Tái khám
+      gia: 200000
+    - ma: DV-XN-MAU
+      ten: Xét nghiệm máu cơ bản
+      gia: 450000
+  lichHen:
+    soLuong: 3
+cacBuoc:
+  - id: le-tan-dang-nhap
+    vai: le-tan
+    hanhDong: dang-nhap
+    phatSuKien: le-tan-san-sang
+  - id: thu-ngan-dang-nhap
+    vai: thu-ngan
+    hanhDong: dang-nhap
+  - id: quan-ly-dang-nhap
+    vai: quan-ly
+    hanhDong: dang-nhap
+  - id: dat-lich-khach-1
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    choSuKien: le-tan-san-sang
+    duLieu:
+      benhNhan: $benhNhan[0]
+      dichVu: $dichVu[0]
+  - id: dat-lich-khach-2
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    duLieu:
+      benhNhan: $benhNhan[1]
+      dichVu: $dichVu[1]
+  - id: dat-lich-khach-3
+    vai: benh-nhan
+    hanhDong: dat-lich-hen
+    phatSuKien: da-dat-du-3-lich
+    duLieu:
+      benhNhan: $benhNhan[2]
+      dichVu: $dichVu[2]
+  - id: check-in-khach-1
+    vai: le-tan
+    hanhDong: check-in
+    choSuKien: da-dat-du-3-lich
+    duLieu:
+      lichHen: $lichHen[0]
+  - id: check-in-khach-2
+    vai: le-tan
+    hanhDong: check-in
+    duLieu:
+      lichHen: $lichHen[1]
+  - id: check-in-khach-3
+    vai: le-tan
+    hanhDong: check-in
+    phatSuKien: da-check-in-du-3
+    duLieu:
+      lichHen: $lichHen[2]
+  - id: thu-tien-khach-1
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    choSuKien: da-check-in-du-3
+    duLieu:
+      benhNhan: $benhNhan[0]
+  - id: thu-tien-khach-2
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    duLieu:
+      benhNhan: $benhNhan[1]
+  - id: thu-tien-khach-3
+    vai: thu-ngan
+    hanhDong: thanh-toan
+    phatSuKien: da-thu-du-3
+    duLieu:
+      benhNhan: $benhNhan[2]
+  - id: xem-bao-cao-ngay
+    vai: quan-ly
+    hanhDong: xem-bao-cao-doanh-thu
+    choSuKien: da-thu-du-3
+kiemDem:
+  - id: doanh-thu-ngay
+    ten: Tổng doanh thu trong ngày
+    nguon: [ui, api, db]
+    kyVong:
+      tuDuLieuSinh: tongGiaLichHenDaThanhToan
+    donVi: VND
+  - id: so-lich-hen
+    ten: Số lịch hẹn đã tạo
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soLichHen
+    donVi: lịch
+  - id: so-luot-check-in
+    ten: Số lượt check-in
+    nguon: [ui, db]
+    kyVong:
+      tuDuLieuSinh: soCheckIn
+    donVi: lượt
