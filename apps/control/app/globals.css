@@ -429,6 +429,23 @@ button:disabled {
   display: block;
 }
 
+/* --- Bo sung S5.5: form khai bao cau hinh tren trang Cau hinh --- */
+
+.nhan-truong {
+  display: block;
+  font-weight: 600;
+  margin: 16px 0 6px;
+}
+
+.nhan-truong:first-of-type {
+  margin-top: 0;
+}
+
+.o-nhap-bang {
+  max-width: none;
+  margin-bottom: 0;
+}
+
 @media (max-width: 760px) {
   .nhom-che-do {
     grid-template-columns: 1fr;

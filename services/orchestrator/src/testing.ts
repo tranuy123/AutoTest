@@ -12,6 +12,7 @@ import {
 } from "./cleanup.js";
 import { loadConfig, type AppConfig } from "./config.js";
 import { EMPTY_BANNED_LIST } from "./data-generator.js";
+import { EffectiveConfigResolver } from "./effective-config.js";
 import { EntityRegistry, InMemoryEntityRepository } from "./entity-registry.js";
 import { RunEventBus } from "./event-bus.js";
 import type { KiemDemService } from "./kiem-dem.js";
@@ -21,6 +22,7 @@ import { DataService, InMemoryRunDataRepository } from "./run-data-store.js";
 import { InMemoryRunRepository, RunService } from "./run-store.js";
 import type { SandboxGate } from "./sandbox-gate.js";
 import { InMemoryScenarioRepository, ScenarioService } from "./scenario-store.js";
+import type { SettingsService } from "./settings-store.js";
 import type {
   WorkerClient,
   WorkerSessionRequest,
@@ -328,6 +330,8 @@ export async function makeExecutionStack(
     kiemDemService?: KiemDemService;
     sandboxGate?: SandboxGate;
     stopGraceMs?: number;
+    /** S5.5: noi kho settings de executor doc cau hinh hieu luc. */
+    settingsService?: SettingsService;
   } = {},
 ): Promise<ExecutionStack> {
   const config = makeFullRoleConfig(configOverrides);
@@ -368,6 +372,14 @@ export async function makeExecutionStack(
     callbackBaseUrl: "http://localhost:3101",
     sessionTimeoutMs: 30_000,
     ...executorOverrides,
+    ...(executorOverrides.settingsService
+      ? {
+          effectiveConfig: new EffectiveConfigResolver(
+            config,
+            executorOverrides.settingsService,
+          ),
+        }
+      : {}),
   });
   worker.onSessionFinished = (result) => executor.handleSessionFinished(result);
   const batchService = new BatchService({ runService, executor });

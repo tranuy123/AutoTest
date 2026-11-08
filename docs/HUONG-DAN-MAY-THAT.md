@@ -65,6 +65,17 @@ cho cả 5 gói (scenario-schema, oracle, orchestrator, runner, control).
 
 ## Mục 3 — Tạo file `.env` và ý nghĩa từng biến
 
+> **Khai báo đích + tài khoản ngay trên giao diện (từ S5.5):** URL đích UAT,
+> allowlist, tenant và tên đăng nhập/mật khẩu của từng vai khai báo ngay tại
+> trang **Cấu hình môi trường** (http://localhost:3100/cau-hinh) — điền vào
+> form rồi bấm **Lưu cấu hình**. Giá trị được lưu vào cơ sở dữ liệu nội bộ
+> của AutoTest trên chính máy này và **áp dụng ngay cho các lần chạy sau,
+> không cần khởi động lại**; mật khẩu không bao giờ hiển thị lại trên giao
+> diện (ô mật khẩu để trống = giữ nguyên mật khẩu hiện tại). File `.env`
+> dưới đây chỉ còn là **giá trị mặc định ban đầu** khi chưa khai báo gì trên
+> giao diện — giá trị đã khai báo trên giao diện được ưu tiên hơn. Riêng cờ
+> sandbox kênh ngoài (`CHANNELS_SANDBOX`) vẫn chỉ đổi qua `.env`.
+
 ```bash
 cp .env.example .env
 ```

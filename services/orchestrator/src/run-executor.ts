@@ -17,6 +17,7 @@ import type { ScenarioStepDef } from "@autotest/scenario-schema";
 import type { AppConfig } from "./config.js";
 import type { CleanupService } from "./cleanup.js";
 import type { GeneratedRunData } from "./data-generator.js";
+import type { EffectiveConfigResolver } from "./effective-config.js";
 import type { RunEventBus } from "./event-bus.js";
 import type { KiemDemService } from "./kiem-dem.js";
 import { logEvent } from "./log.js";
@@ -238,6 +239,13 @@ export interface RunExecutorDeps {
    * du lieu/cap phien (fail-closed, NFR-4).
    */
   sandboxGate?: SandboxGate;
+  /**
+   * S5.5: bo giai cau hinh hieu luc (settings khai bao qua giao dien ghi
+   * de env). Co thi cong chan AD-6 va tai khoan theo vai deu doc qua bo
+   * giai nay - doc truc tiep moi lan dung nen ap dung ngay sau khi luu.
+   * Vang mat thi giu hanh vi cu: doc thang tu config (.env).
+   */
+  effectiveConfig?: EffectiveConfigResolver;
 }
 
 export class RunAlreadyActiveError extends Error {
@@ -430,8 +438,12 @@ export class RunExecutor {
     }
     const scenario = scenarioRecord.scenario;
 
-    // Cong chan AD-6 kiem tra lai ngay truoc khi cap phien.
-    const evaluation = evaluateTarget(run.targetUrl, config.allowlist);
+    // Cong chan AD-6 kiem tra lai ngay truoc khi cap phien (allowlist
+    // hieu luc neu co bo giai S5.5, doc truc tiep tai thoi diem chay).
+    const allowlist = this.deps.effectiveConfig
+      ? (await this.deps.effectiveConfig.getTarget()).allowlist
+      : config.allowlist;
+    const evaluation = evaluateTarget(run.targetUrl, allowlist);
     if (!evaluation.allowed) {
       await runService.finishRun(runId, "hong");
       logEvent("target_blocked", { runId, origin: evaluation.origin, reason: evaluation.reason });
@@ -756,7 +768,11 @@ export class RunExecutor {
       return fail(error instanceof Error ? error.message : "lỗi giải dữ liệu bước");
     }
 
-    const account = this.deps.config.roles.find((r) => r.id === roleId);
+    // Tai khoan theo vai: uu tien cau hinh khai bao qua giao dien (S5.5,
+    // doc truc tiep tu kho settings) - fallback ve .env khi chua khai bao.
+    const account = this.deps.effectiveConfig
+      ? await this.deps.effectiveConfig.getRoleAccount(roleId)
+      : this.deps.config.roles.find((r) => r.id === roleId);
     if (!account?.configured || !account.username || !account.password) {
       return fail(`Chưa cấu hình tài khoản UAT cho vai '${roleId}'`);
     }

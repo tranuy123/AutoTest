@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Runner (Node + TypeScript + Playwright + Xvnc) - build tu goc repo (context = thu muc goc)
 # S3.1/S3.2 (AD-9): moi phien che do xem chay Chromium headed duoi mot Xvnc
 # (TigerVNC) rieng; Stream Gateway phat hinh qua noVNC o cong 3102.
@@ -8,7 +9,9 @@ ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN corepack enable
 WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
+# Cache mount: ca 3 service dung CHUNG mot kho goi pnpm, va cac lan build
+# sau cung dung lai - goi nao da tai thi khong tai lai nua.
+RUN --mount=type=cache,id=autotest-pnpm-store,target=/pnpm/store pnpm install --frozen-lockfile --store-dir /pnpm/store
 # Dau "..." sau ten goi: build ca cac goi phu thuoc trong workspace
 # (@autotest/oracle) TRUOC runner, theo dung thu tu phu thuoc.
 # Thieu buoc nay, tsc cua runner loi TS2307 vi oracle chua co dist/.
