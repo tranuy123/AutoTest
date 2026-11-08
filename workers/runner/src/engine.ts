@@ -186,6 +186,7 @@ export class SessionEngine {
             driver: handle.driver,
             baseUrl: req.targetBaseUrl,
             paths: this.paths,
+            roleId: req.roleId,
             credentials: { username: req.username, password: req.password },
             data: step.data ?? {},
             registerEntity: async (type, entityId) => {
