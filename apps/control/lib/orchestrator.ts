@@ -265,3 +265,46 @@ export function videoProxyUrl(runId: string, roleId: string): string {
 export function reportProxyUrl(runId: string): string {
   return `/api/runs/${encodeURIComponent(runId)}/report.md`;
 }
+
+/* ---------------- Trang nhat ky lan chay (S5.6) ---------------- */
+
+export interface RunLogEntryView {
+  seq: number;
+  ts: string;
+  roleId?: string;
+  stepId?: string;
+  level: "info" | "warn" | "error";
+  event: string;
+  message: string;
+}
+
+export interface RunLogsView {
+  runId: string;
+  scenarioId: string | null;
+  truncated: boolean;
+  entries: RunLogEntryView[];
+}
+
+/** Doc nhat ky phia server cho trang Nhat ky (lan tai dau). */
+export async function fetchRunLogs(runId: string): Promise<RunLogsView | null> {
+  try {
+    const res = await fetch(
+      `${ORCHESTRATOR_URL}/api/runs/${encodeURIComponent(runId)}/logs`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as RunLogsView;
+  } catch {
+    return null;
+  }
+}
+
+/** URL doc nhat ky JSON qua proxy cua Control (client poll tu day). */
+export function logsProxyUrl(runId: string): string {
+  return `/api/runs/${encodeURIComponent(runId)}/logs`;
+}
+
+/** URL tai file nhat ky .txt qua proxy cua Control (gui di ho tro). */
+export function logsTextProxyUrl(runId: string): string {
+  return `/api/runs/${encodeURIComponent(runId)}/logs.txt`;
+}

@@ -484,6 +484,23 @@ build cả gói phụ thuộc trước, đúng thứ tự). Nếu gặp lại l�
 bạn đang ở bản mới nhất của `main` (`git pull`), rồi chạy lại `SETUP.bat`
 hoặc `docker compose up -d --build`.
 
+### 7.8. Không xem trực tiếp được / cần gửi log khi nhờ hỗ trợ
+
+Trang lần chạy không hiện stream (mất tín hiệu, trình duyệt chặn…) không
+có nghĩa là lần chạy hỏng — thao tác vẫn chạy ở worker. Để tự xem chuyện
+gì đã xảy ra, hoặc gửi cho người hỗ trợ xem giúp:
+
+1. Mở **Lịch sử chạy** → bấm **Xem nhật ký** ở lần chạy cần xem (trang lần
+   chạy và trang kết quả cũng có liên kết "Xem nhật ký").
+2. Trang Nhật ký hiện toàn bộ dòng log theo thời gian, lọc được theo vai
+   và chỉ-xem-lỗi, tự cập nhật khi lần chạy còn đang chạy.
+3. Bấm **Tải log (.txt)** rồi gửi nguyên file đó khi nhờ hỗ trợ (hoặc bấm
+   "Sao chép toàn bộ log" rồi dán vào tin nhắn).
+
+Log đã được hệ thống tự che số điện thoại, email và mật khẩu **trước khi
+lưu**, nên gửi file này đi an toàn — không chứa thông tin đăng nhập hay
+dữ liệu bệnh nhân.
+
 ---
 
 ## Mục 8 — Đầu vào cần chủ dự án cấp cho vòng UAT thật

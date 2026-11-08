@@ -130,6 +130,18 @@ export default function XemTrucTiepClient({
     );
   }
 
+  // S5.6: duong vao trang Nhat ky - dung khi khong xem truc tiep duoc
+  // hoac can tai log gui ho tro.
+  const lienKetNhatKy = (
+    <p className="mo-ta">
+      Không xem trực tiếp được hoặc cần gửi log khi nhờ hỗ trợ?{" "}
+      <a href={`/lan-chay/${encodeURIComponent(runId)}/nhat-ky`}>
+        Xem nhật ký lần chạy
+      </a>{" "}
+      — có nút tải file log (.txt) ở đó.
+    </p>
+  );
+
   const thanhDieuKhien = !ketQuaCuoi ? (
     <div
       className="the"
@@ -174,6 +186,7 @@ export default function XemTrucTiepClient({
     return (
       <>
         {thanhDieuKhien}
+        {lienKetNhatKy}
         <div className="the lop-phu-chay-nhanh">
           <h2 style={{ marginTop: 0 }}>Chế độ chạy nhanh — không có stream</h2>
           <p className="mo-ta" style={{ marginBottom: 0 }}>
@@ -197,6 +210,7 @@ export default function XemTrucTiepClient({
   return (
     <>
       {thanhDieuKhien}
+      {lienKetNhatKy}
       {loiTai && (
         <p className="thong-bao loi" role="alert">
           {loiTai}

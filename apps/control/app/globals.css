@@ -446,6 +446,37 @@ button:disabled {
   margin-bottom: 0;
 }
 
+/* Trang nhat ky lan chay (S5.6): khung log monospace, dong loi/canh bao
+   noi bang mau kem chu (dung chung sac do voi .trang-thai). */
+.khung-nhat-ky {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  max-height: 560px;
+  overflow: auto;
+}
+
+.dong-nhat-ky {
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 2px 4px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.dong-nhat-ky.loi {
+  color: #f87171;
+}
+
+.dong-nhat-ky.canh-bao {
+  color: #fbbf24;
+}
+
 @media (max-width: 760px) {
   .nhom-che-do {
     grid-template-columns: 1fr;

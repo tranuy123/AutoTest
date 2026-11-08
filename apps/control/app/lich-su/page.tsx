@@ -56,6 +56,8 @@ export default async function LichSu({
       <p className="mo-ta">
         Mỗi lần chạy có một mã run_id riêng. Bấm &quot;Xem kết quả&quot; để mở trang kết
         quả của lần chạy: kết luận, bảng đối chiếu, video từng vai và tải báo cáo.
+        Bấm &quot;Xem nhật ký&quot; để xem log chi tiết của lần chạy và tải file log
+        (.txt) khi cần gửi đi hỗ trợ.
       </p>
 
       <form className="the" method="get" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
@@ -126,6 +128,13 @@ export default async function LichSu({
                       className="lien-ket-nut"
                     >
                       Xem kết quả
+                    </Link>
+                    <br />
+                    <Link
+                      href={`/lan-chay/${encodeURIComponent(run.runId)}/nhat-ky`}
+                      className="lien-ket-nut"
+                    >
+                      Xem nhật ký
                     </Link>
                   </td>
                 </tr>
