@@ -119,4 +119,12 @@ describe("dang-nhap — khớp form thật của CRM_Loyalty (sửa theo log má
       "https://uat.example.invalid/quan-tri/dang-nhap",
     );
   });
+
+  it("lỗi không thấy form kèm địa chỉ trang lúc lỗi để log tự nói rõ trình duyệt đã đứng ở đâu", async () => {
+    const driver = new FakePageDriver();
+    const action = getCrmAction("dang-nhap");
+    await expect(action(boiCanhVai(driver, "le-tan"))).rejects.toThrow(
+      /địa chỉ trang lúc lỗi: https:\/\/uat\.example\.invalid\/quan-tri\/dang-nhap/,
+    );
+  });
 });
