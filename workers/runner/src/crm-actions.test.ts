@@ -120,6 +120,34 @@ describe("dang-nhap — khớp form thật của CRM_Loyalty (sửa theo log má
     );
   });
 
+  it("URL đích đã tận cùng bằng /quan-tri (khai báo thực tế của chủ dự án) → không nối trùng thành /quan-tri/quan-tri/dang-nhap", async () => {
+    const driver = driverFormNhanVien();
+    const action = getCrmAction("dang-nhap");
+    const ctx: ActionContext = {
+      ...boiCanhVai(driver, "le-tan"),
+      baseUrl: "https://uat.example.invalid/quan-tri",
+    };
+    await action(ctx);
+    const mo = driver.ops.find((o) => o.op === "goto");
+    expect(mo && "url" in mo ? mo.url : "").toBe(
+      "https://uat.example.invalid/quan-tri/dang-nhap",
+    );
+  });
+
+  it("URL đích tận cùng bằng /quan-tri/ (có dấu gạch cuối) → vẫn không nối trùng", async () => {
+    const driver = driverFormNhanVien();
+    const action = getCrmAction("dang-nhap");
+    const ctx: ActionContext = {
+      ...boiCanhVai(driver, "le-tan"),
+      baseUrl: "https://uat.example.invalid/quan-tri/",
+    };
+    await action(ctx);
+    const mo = driver.ops.find((o) => o.op === "goto");
+    expect(mo && "url" in mo ? mo.url : "").toBe(
+      "https://uat.example.invalid/quan-tri/dang-nhap",
+    );
+  });
+
   it("lỗi không thấy form kèm địa chỉ trang lúc lỗi để log tự nói rõ trình duyệt đã đứng ở đâu", async () => {
     const driver = new FakePageDriver();
     const action = getCrmAction("dang-nhap");
