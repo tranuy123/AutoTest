@@ -58,3 +58,65 @@ describe("xem-bao-cao-doanh-thu — đọc số báo cáo (S4.2/S4.3)", () => {
     expect(outputs.tong_doanh_thu).toBe(1234500);
   });
 });
+
+describe("dang-nhap — khớp form thật của CRM_Loyalty (sửa theo log máy thật 2026-11-08)", () => {
+  function driverFormNhanVien() {
+    const driver = new FakePageDriver();
+    driver.setElement({ by: "testid", id: "admin-input-email" }, { visible: true });
+    driver.setElement({ by: "testid", id: "admin-input-password" }, { visible: true });
+    driver.setElement({ by: "testid", id: "admin-nut-dang-nhap" }, { visible: true });
+    driver.setElement({ by: "testid", id: "app-shell" }, { visible: true });
+    return driver;
+  }
+
+  function boiCanhVai(driver: FakePageDriver, roleId: string): ActionContext {
+    return { ...boiCanh(driver), roleId, step: { stepId: "dang-nhap-le-tan" } };
+  }
+
+  it("nhân viên: mở /quan-tri/dang-nhap và điền đúng testid thật của CRM", async () => {
+    const driver = driverFormNhanVien();
+    const action = getCrmAction("dang-nhap");
+    await action(boiCanhVai(driver, "le-tan"));
+    const mo = driver.ops.find((o) => o.op === "goto");
+    expect(mo && "url" in mo ? mo.url : "").toBe(
+      "https://uat.example.invalid/quan-tri/dang-nhap",
+    );
+    const cacDien = driver.ops.filter((o) => o.op === "fill").map((o) => ("key" in o ? o.key : ""));
+    expect(cacDien).toContain("testid:admin-input-email");
+    expect(cacDien).toContain("testid:admin-input-password");
+    const cacBam = driver.ops.filter((o) => o.op === "click").map((o) => ("key" in o ? o.key : ""));
+    expect(cacBam).toContain("testid:admin-nut-dang-nhap");
+  });
+
+  it("bệnh nhân: mở cổng riêng /dang-nhap, không lạc vào cổng nhân viên", async () => {
+    const driver = driverFormNhanVien();
+    const action = getCrmAction("dang-nhap");
+    await action(boiCanhVai(driver, "benh-nhan"));
+    const mo = driver.ops.find((o) => o.op === "goto");
+    expect(mo && "url" in mo ? mo.url : "").toBe(
+      "https://uat.example.invalid/dang-nhap",
+    );
+  });
+
+  it("CRM đòi mã TOTP sau mật khẩu → lỗi nói rõ TOTP thay vì chờ khung ứng dụng", async () => {
+    const driver = new FakePageDriver();
+    driver.setElement({ by: "testid", id: "admin-input-email" }, { visible: true });
+    driver.setElement({ by: "testid", id: "admin-input-password" }, { visible: true });
+    driver.setElement({ by: "testid", id: "admin-nut-dang-nhap" }, { visible: true });
+    driver.setElement({ by: "testid", id: "admin-input-totp" }, { visible: true });
+    const action = getCrmAction("dang-nhap");
+    await expect(action(boiCanhVai(driver, "le-tan"))).rejects.toThrow(/TOTP/);
+  });
+
+  it("trang không có form (trường hợp cũ ở trang gốc) → vẫn lỗi định danh, nhưng đã tới đúng địa chỉ trước", async () => {
+    const driver = new FakePageDriver();
+    const action = getCrmAction("dang-nhap");
+    await expect(action(boiCanhVai(driver, "le-tan"))).rejects.toThrow(
+      /Không tìm thấy phần tử/,
+    );
+    const mo = driver.ops.find((o) => o.op === "goto");
+    expect(mo && "url" in mo ? mo.url : "").toBe(
+      "https://uat.example.invalid/quan-tri/dang-nhap",
+    );
+  });
+});

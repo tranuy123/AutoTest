@@ -27,6 +27,8 @@ import {
 import { StepError } from "./types.js";
 
 export interface CrmPaths {
+  dangNhapNhanVien: string;
+  dangNhapBenhNhan: string;
   datLich: string;
   lichHen: string;
   kham: string;
@@ -37,6 +39,10 @@ export interface CrmPaths {
 }
 
 export const DEFAULT_CRM_PATHS: CrmPaths = {
+  // Da xac nhan tu ma nguon CRM_Loyalty (route group quan-tri / benh-nhan):
+  // nhan vien dang nhap o /quan-tri/dang-nhap, benh nhan o /dang-nhap.
+  dangNhapNhanVien: "/quan-tri/dang-nhap",
+  dangNhapBenhNhan: "/dang-nhap",
   datLich: "/dat-lich",
   lichHen: "/lich-hen",
   kham: "/kham",
@@ -52,6 +58,14 @@ export function crmPathsFromEnv(env: NodeJS.ProcessEnv): CrmPaths {
     return v ? v : fallback;
   };
   return {
+    dangNhapNhanVien: pick(
+      "CRM_PATH_DANG_NHAP_NHAN_VIEN",
+      DEFAULT_CRM_PATHS.dangNhapNhanVien,
+    ),
+    dangNhapBenhNhan: pick(
+      "CRM_PATH_DANG_NHAP_BENH_NHAN",
+      DEFAULT_CRM_PATHS.dangNhapBenhNhan,
+    ),
     datLich: pick("CRM_PATH_DAT_LICH", DEFAULT_CRM_PATHS.datLich),
     lichHen: pick("CRM_PATH_LICH_HEN", DEFAULT_CRM_PATHS.lichHen),
     kham: pick("CRM_PATH_KHAM", DEFAULT_CRM_PATHS.kham),
@@ -66,6 +80,8 @@ export interface ActionContext {
   driver: PageDriver;
   baseUrl: string;
   paths: CrmPaths;
+  /** Vai dang thuc thi (engine truyen vao) - dang-nhap chon dung form theo vai. */
+  roleId?: string;
   /** Chi dung boi hanh dong dang-nhap; khong bao gio dua vao outputs/log. */
   credentials: { username: string; password: string };
   data: Record<string, string | number | boolean>;
@@ -79,21 +95,32 @@ export type ActionResult = { outputs: Record<string, string | number> };
 export type CrmAction = (ctx: ActionContext) => Promise<ActionResult>;
 
 const L = {
+  // Dinh danh that cua form dang nhap nhan vien CRM_Loyalty (da xac nhan tu
+  // ma nguon, ca luot-564 lan luot-836): testid admin-input-email /
+  // admin-input-password / admin-nut-dang-nhap, nhan "Email" / "Mat khau",
+  // input name="email" / name="password". Cac ung vien cu giu lam du phong.
   username: [
-    { by: "label", text: "Tên đăng nhập" },
+    { by: "testid", id: "admin-input-email" },
     { by: "label", text: "Email" },
+    { by: "css", selector: "input[name='email']" },
+    { by: "label", text: "Tên đăng nhập" },
     { by: "testid", id: "login-username" },
     { by: "css", selector: "input[name='username']" },
   ],
   password: [
+    { by: "testid", id: "admin-input-password" },
     { by: "label", text: "Mật khẩu" },
+    { by: "css", selector: "input[name='password']" },
     { by: "testid", id: "login-password" },
     { by: "css", selector: "input[type='password']" },
   ],
   loginButton: [
+    { by: "testid", id: "admin-nut-dang-nhap" },
     { by: "role", role: "button", name: "Đăng nhập" },
     { by: "testid", id: "login-submit" },
   ],
+  // O nhap ma TOTP cua CRM (buoc 2FA sau mat khau, neu tai khoan co bat).
+  totpCode: [{ by: "testid", id: "admin-input-totp" }],
   appShell: [
     { by: "testid", id: "app-shell" },
     { by: "role", role: "navigation" },
@@ -202,12 +229,36 @@ async function moTrangLichHen(ctx: ActionContext): Promise<void> {
 
 export const CRM_ACTIONS: Record<string, CrmAction> = {
   "dang-nhap": async (ctx) => {
-    await moTrang(ctx.driver, ctx.step, ctx.baseUrl);
+    // CRM_Loyalty co 2 cong dang nhap rieng: nhan vien o /quan-tri/dang-nhap,
+    // benh nhan o /dang-nhap. Ban cu mo thang trang goc (khong co form) nen
+    // buoc dang nhap het han o o ten dang nhap - da gap tren may that
+    // 2026-11-08 (lan chay AUTOTEST_20261108_003).
+    const duongDan =
+      ctx.roleId === "benh-nhan"
+        ? ctx.paths.dangNhapBenhNhan
+        : ctx.paths.dangNhapNhanVien;
+    await moTrang(ctx.driver, ctx.step, url(ctx.baseUrl, duongDan));
     await choPhanTu(ctx.driver, ctx.step, L.username);
     await dienTruong(ctx.driver, ctx.step, L.username, ctx.credentials.username);
     await dienTruong(ctx.driver, ctx.step, L.password, ctx.credentials.password);
     await bamNut(ctx.driver, ctx.step, L.loginButton);
-    await choPhanTu(ctx.driver, ctx.step, L.appShell);
+    try {
+      await choPhanTu(ctx.driver, ctx.step, L.appShell);
+    } catch (loiGoc) {
+      // Neu CRM bat buoc ma TOTP (2FA) sau mat khau thi bao ro ly do thay vi
+      // de nguoi dung thay loi cho khung ung dung mo ho.
+      const coTotp = await ctx.driver
+        .waitFirstVisible(L.totpCode, { timeoutMs: 800 })
+        .then(() => true)
+        .catch(() => false);
+      if (coTotp) {
+        throw new StepError(
+          ctx.step.stepId,
+          "Tài khoản yêu cầu mã xác thực TOTP (2FA) sau khi nhập mật khẩu — AutoTest chưa có mã bí mật TOTP của vai này. Hãy tắt 2FA cho tài khoản test trên UAT, hoặc cấp mã bí mật TOTP để bổ sung khai báo.",
+        );
+      }
+      throw loiGoc;
+    }
     return { outputs: {} };
   },
 
